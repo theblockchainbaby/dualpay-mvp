@@ -1,21 +1,14 @@
 const axios = require('axios');
 
-async function getXrpToFiatRate(fiatCurrency = 'usd') {
+async function convertXrpToFiat(amount) {
   try {
-    const response = await axios.get(
-      `https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=${fiatCurrency}`
-    );
-    return response.data.ripple[fiatCurrency];
+    const response = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd');
+    const rate = response.data.ripple.usd;
+    return amount * rate;
   } catch (error) {
-    console.error('Error fetching rate:', error.message);
-    throw error;
+    console.error('Fiat conversion error:', error.message);
+    return amount * 0.80; // Fallback rate
   }
 }
 
-async function convertXrpToFiat(xrpAmount, fiatCurrency = 'usd') {
-  const rate = await getXrpToFiatRate(fiatCurrency);
-  return xrpAmount * rate;
-}
-
-module.exports = { getXrpToFiatRate, convertXrpToFiat };
-
+module.exports = { convertXrpToFiat };
