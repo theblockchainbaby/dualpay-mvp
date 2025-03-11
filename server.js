@@ -12,7 +12,7 @@ app.post('/send', async (req, res) => {
   const client = new xrpl.Client('wss://s.altnet.rippletest.net:51233');
   try {
     await client.connect();
-    const wallet = xrpl.Wallet.fromSeed('sEdTRreFWphDdkDWFS9GKm6Ept2C76c'); // Updated seed
+    const wallet = xrpl.Wallet.fromSeed('sEdVawtBsNiiRba4AA9Mhig99JgdQmr');
     const txHash = await sendTransaction(client, wallet, parseFloat(amount), 'XRP', recipient);
     res.json({ success: true, txHash });
   } catch (error) {
@@ -23,4 +23,3 @@ app.post('/send', async (req, res) => {
 });
 
 app.listen(3000, () => console.log('Server running at http://localhost:3000'));
-
