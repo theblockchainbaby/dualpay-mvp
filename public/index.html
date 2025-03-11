@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DualPay MVP</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #333; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; }
+    input, select { padding: 5px; width: 200px; }
+    button { padding: 10px 20px; background-color: #007bff; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #0056b3; }
+    #result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h1>DualPay MVP</h1>
+  <div class="form-group">
+    <label for="amount1">Amount 1 (XRP):</label>
+    <input type="number" id="amount1" value="1" step="0.1">
+  </div>
+  <div class="form-group">
+    <label for="recipient1">Recipient 1:</label>
+    <input type="text" id="recipient1" value="rLqoPNccpG4zEJX99cfoXZbHJGWWB8Q2VP">
+  </div>
+  <div class="form-group">
+    <label for="amount2">Amount 2 (XRP):</label>
+    <input type="number" id="amount2" value="0.5" step="0.1">
+  </div>
+  <div class="form-group">
+    <label for="recipient2">Recipient 2:</label>
+    <input type="text" id="recipient2" value="rD5KjjeN62Y9AqawhXnUGRhuWaumJQfmWe">
+  </div>
+  <div class="form-group">
+    <label for="currency">Currency:</label>
+    <select id="currency">
+      <option value="usd">USD</option>
+      <option value="eur">EUR</option>
+      <option value="gbp">GBP</option>
+    </select>
+  </div>
+  <button onclick="sendTransaction()">Send Transactions</button>
+  <div id="result"></div>
+
+  <script>
+    async function sendTransaction() {
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = 'Processing...';
+
+      const amount1 = document.getElementById('amount1').value;
+      const recipient1 = document.getElementById('recipient1').value;
+      const amount2 = document.getElementById('amount2').value;
+      const recipient2 = document.getElementById('recipient2').value;
+      const currency = document.getElementById('currency').value;
+
+      try {
+        const response = await fetch('/send-transaction', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount1, recipient1, amount2, recipient2, currency })
+        });
+        const data = await response.json();
+        if (data.error) {
+          resultDiv.innerHTML = `Error: ${data.error}`;
+        } else {
+          resultDiv.innerHTML = `<pre>${data.output}</pre>`;
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `Error: ${error.message}`;
+      }
+    }
+  </script>
+</body>
+</html>
+

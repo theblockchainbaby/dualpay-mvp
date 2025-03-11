@@ -15,7 +15,7 @@ const config = {
       recipient: "rD5KjjeN62Y9AqawhXnUGRhuWaumJQfmWe",
     },
   ],
-  senderSeed: "sEdSV3bu5LAEcB79mqQXMu43sZ4R6yW", // Replace with new seed from generateWallet.js
+  senderSeed: "sEdTRreFWphDdkDWFS9GKm6Ept2C76c", // Replace with new seed from generateWallet.js
 };
 
 async function getXrpToFiatRate(fiatCurrency = 'usd') {
@@ -67,7 +67,7 @@ async function sendTransaction(client, wallet, amount, currency, recipient) {
       });
       console.log("Prepared transaction:", JSON.stringify(prepared, null, 2));
 
-      const rate = await getXrpToFiatRate('usd');
+      const rate = await getXrpToFiatRate('gbp');
       const fiatAmount = Number(amount) * rate;
       console.log(`${amount} XRP = ${fiatAmount.toFixed(2)} USD`);
     } else {
