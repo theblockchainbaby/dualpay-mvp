@@ -6,19 +6,9 @@
   <title>DualPay - Home</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {
-      background: linear-gradient(to bottom right, #1e3a8a, #60a5fa);
-      min-height: 100vh;
-    }
-    .glass {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    .hover-scale:hover {
-      transform: scale(1.05);
-      transition: transform 0.2s ease-in-out;
-    }
+    body { background: linear-gradient(to bottom right, #1e3a8a, #60a5fa); min-height: 100vh; }
+    .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+    .hover-scale:hover { transform: scale(1.05); transition: transform 0.2s ease-in-out; }
   </style>
 </head>
 <body class="flex items-center justify-center p-4">
@@ -28,9 +18,9 @@
     <div class="flex justify-center space-x-4">
       <a href="/send" class="py-3 px-6 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold hover-scale">Send XRP</a>
       <a href="/receive" class="py-3 px-6 bg-green-600 hover:bg-green-700 rounded-lg font-semibold hover-scale">Receive XRP</a>
+      <a href="/pos" class="py-3 px-6 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold hover-scale">DualPOS</a>
     </div>
   </div>
-
   <script>
     async function updateBalance() {
       const balanceSpan = document.getElementById('balance');

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DualPay - Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: linear-gradient(to bottom right, #1e3a8a, #60a5fa); min-height: 100vh; }
+    .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+  </style>
+</head>
+<body class="flex items-center justify-center p-4">
+  <div class="w-full max-w-md glass rounded-xl shadow-lg p-6 text-white">
+    <h1 class="text-3xl font-bold text-center mb-4">DualPay Login</h1>
+    <div class="space-y-4">
+      <input type="password" id="passcode" placeholder="Enter 4-digit Passcode" maxlength="4" class="w-full p-2 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none">
+      <button onclick="login()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold">Login</button>
+      <button onclick="facialLogin()" class="w-full py-3 bg-green-600 hover:bg-green-700 rounded-lg font-semibold">Use Facial Recognition</button>
+    </div>
+    <p id="error" class="text-red-300 text-center mt-4"></p>
+  </div>
+<script>
+  async function login() {
+    const passcode = document.getElementById('passcode').value;
+    const errorDiv = document.getElementById('error');
+    errorDiv.textContent = ''; // Clear previous errors
+    console.log('Login clicked, passcode:', passcode);
+    if (passcode.length !== 4 || !/^\d{4}$/.test(passcode)) {
+      errorDiv.textContent = 'Please enter a 4-digit passcode';
+      console.log('Validation failed');
+      return;
+    }
+    try {
+      console.log('Sending POST to /login');
+      const response = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passcode })
+      });
+      console.log('Response status:', response.status);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log('Response data:', data);
+      if (data.success) {
+        console.log('Redirecting to /home');
+        window.location.href = '/home';
+      } else {
+        errorDiv.textContent = data.error || 'Login failed';
+        console.log('Login failed:', data.error);
+      }
+    } catch (error) {
+      errorDiv.textContent = 'Error: ' + error.message;
+      console.log('Fetch error:', error);
+    }
+  }
+  function facialLogin() {
+    console.log('Facial recognition clicked');
+    alert('Simulated facial recognition - redirecting...');
+    loginWithPasscode('1234');
+  }
+  async function loginWithPasscode(passcode) {
+    const errorDiv = document.getElementById('error');
+    try {
+      const response = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passcode })
+      });
+      const data = await response.json();
+      if (data.success) window.location.href = '/home';
+      else errorDiv.textContent = data.error || 'Login failed';
+    } catch (error) {
+      errorDiv.textContent = 'Error: ' + error.message;
+    }
+  }
+</script>
+</body>
+</html>

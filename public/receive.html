@@ -6,19 +6,9 @@
   <title>DualPay - Receive</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {
-      background: linear-gradient(to bottom right, #1e3a8a, #60a5fa);
-      min-height: 100vh;
-    }
-    .glass {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    .hover-scale:hover {
-      transform: scale(1.05);
-      transition: transform 0.2s ease-in-out;
-    }
+    body { background: linear-gradient(to bottom right, #1e3a8a, #60a5fa); min-height: 100vh; }
+    .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+    .hover-scale:hover { transform: scale(1.05); transition: transform 0.2s ease-in-out; }
   </style>
 </head>
 <body class="flex items-center justify-center p-4">
@@ -31,7 +21,6 @@
       <button onclick="navigator.clipboard.writeText(document.getElementById('walletAddress').textContent)" class="mt-4 py-2 px-4 bg-green-600 hover:bg-green-700 rounded-lg font-semibold hover-scale">Copy Address</button>
     </div>
   </div>
-
   <script>
     async function updateBalance() {
       const balanceSpan = document.getElementById('balance');

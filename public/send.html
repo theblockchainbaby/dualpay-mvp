@@ -4,111 +4,141 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DualPay - Send</title>
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {
-      background: linear-gradient(to bottom right, #1e3a8a, #60a5fa);
-      min-height: 100vh;
-    }
-    .glass {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    .hover-scale:hover {
-      transform: scale(1.05);
-      transition: transform 0.2s ease-in-out;
-    }
+    body { background: linear-gradient(to bottom right, #1e3a8a, #60a5fa); min-height: 100vh; }
+    .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+    .hover-scale:hover { transform: scale(1.05); transition: transform 0.2s ease-in-out; }
   </style>
 </head>
 <body class="flex items-center justify-center p-4">
   <div class="w-full max-w-md glass rounded-xl shadow-lg p-6 text-white">
-    <h1 class="text-3xl font-bold text-center mb-4">DualPay</h1>
+    <h1 class="text-3xl font-bold text-center mb-4">Send XRP</h1>
     <p class="text-center mb-6">Wallet Balance: <span id="balance" class="font-semibold">Loading...</span> XRP</p>
-
     <div class="space-y-4">
       <div>
         <label for="amount1" class="block text-sm font-medium mb-1">Amount 1 (XRP)</label>
-        <input type="number" id="amount1" value="1" step="0.1" class="w-full p-2 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <input type="number" id="amount1" value="1" step="0.1" class="w-full p-2 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none">
       </div>
       <div>
         <label for="recipient1" class="block text-sm font-medium mb-1">Recipient 1</label>
-        <input type="text" id="recipient1" value="rLqoPNccpG4zEJX99cfoXZbHJGWWB8Q2VP" class="w-full p-2 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <input type="text" id="recipient1" value="rLqoPNccpG4zEJX99cfoXZbHJGWWB8Q2VP" class="w-full p-2 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none">
       </div>
       <div>
         <label for="amount2" class="block text-sm font-medium mb-1">Amount 2 (XRP)</label>
-        <input type="number" id="amount2" value="0.5" step="0.1" class="w-full p-2 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <input type="number" id="amount2" value="0.5" step="0.1" class="w-full p-2 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none">
       </div>
       <div>
         <label for="recipient2" class="block text-sm font-medium mb-1">Recipient 2</label>
-        <input type="text" id="recipient2" value="rD5KjjeN62Y9AqawhXnUGRhuWaumJQfmWe" class="w-full p-2 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <input type="text" id="recipient2" value="rD5KjjeN62Y9AqawhXnUGRhuWaumJQfmWe" class="w-full p-2 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none">
       </div>
       <div>
         <label for="currency" class="block text-sm font-medium mb-1">Currency</label>
-        <select id="currency" class="w-full p-2 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <select id="currency" class="w-full p-2 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none">
           <option value="usd">USD</option>
           <option value="eur">EUR</option>
           <option value="gbp">GBP</option>
         </select>
       </div>
     </div>
-
     <button onclick="sendTransaction()" class="w-full mt-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold hover-scale">Send Transactions</button>
-
+<button onclick="tapToPay()" class="w-full mt-4 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold hover-scale">Tap to Pay</button>
     <div id="result" class="mt-6 p-4 bg-gray-900 rounded-lg text-sm"></div>
+    <div id="twoFaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div class="glass p-6 rounded-lg text-white">
+        <h2 class="text-xl mb-4">Enter 2FA Code</h2>
+        <input type="text" id="twoFaCode" placeholder="SMS/Auth Code" class="w-full p-2 rounded-lg bg-gray-800 text-white border border-gray-700">
+        <button onclick="verify2Fa()" class="mt-4 w-full py-2 bg-blue-600 hover:bg-blue-700 rounded-lg">Verify</button>
+      </div>
+    </div>
   </div>
+<script>
+  async function updateBalance() {
+    const balanceSpan = document.getElementById('balance');
+    try {
+      const response = await fetch('/balance');
+      const data = await response.json();
+      balanceSpan.textContent = data.success ? data.balance : 'Error';
+    } catch (error) {
+      balanceSpan.textContent = 'Error';
+    }
+  }
+  updateBalance();
+  setInterval(updateBalance, 30000);
 
-  <script>
-    async function updateBalance() {
-      const balanceSpan = document.getElementById('balance');
+  async function sendTransaction() {
+    const resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = '<p class="text-yellow-300">Processing...</p>';
+    const transactions = [
+      { amount: document.getElementById('amount1').value, recipient: document.getElementById('recipient1').value },
+      { amount: document.getElementById('amount2').value, recipient: document.getElementById('recipient2').value }
+    ];
+
+    for (const tx of transactions) {
       try {
-        const response = await fetch('/balance');
-        const data = await response.json();
-        balanceSpan.textContent = data.success ? data.balance : 'Error';
+        // Check balance before sending
+        const balanceResponse = await fetch('/balance');
+        const balanceData = await balanceResponse.json();
+        if (!balanceData.success || parseFloat(balanceData.balance) < parseFloat(tx.amount) + 0.000012) {
+          resultDiv.innerHTML += `<p class="text-red-300">Tx to ${tx.recipient}: Insufficient funds (${balanceData.balance || 'unknown'} XRP left)</p>`;
+          continue;
+        }
+
+        // Check for 2FA if amount > 50 XRP
+        if (parseFloat(tx.amount) > 50) {
+          document.getElementById('twoFaModal').classList.remove('hidden');
+          window.currentTx = tx;
+          return; // Wait for 2FA verification
+        }
+
+        await sendTx(tx); // Send if balance is sufficient and no 2FA needed
       } catch (error) {
-        balanceSpan.textContent = 'Error';
+        resultDiv.innerHTML += `<p class="text-red-300">Tx to ${tx.recipient}: Error: ${error.message}</p>`;
       }
     }
-    updateBalance();
-    setInterval(updateBalance, 30000);
-  </script>
+    updateBalance(); // Update balance after all transactions
+  }
 
-  <script>
-    async function sendTransaction() {
-      const resultDiv = document.getElementById('result');
-      resultDiv.innerHTML = '<p class="text-yellow-300">Processing...</p>';
-
-      const transactions = [
-        {
-          amount: document.getElementById('amount1').value,
-          recipient: document.getElementById('recipient1').value
-        },
-        {
-          amount: document.getElementById('amount2').value,
-          recipient: document.getElementById('recipient2').value
-        }
-      ];
-
+  async function verify2Fa() {
+    const code = document.getElementById('twoFaCode').value;
+    if (code === '123456') { // Mock 2FA code
+      document.getElementById('twoFaModal').classList.add('hidden');
       try {
-        for (const tx of transactions) {
-          const response = await fetch('/send', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(tx),
-          });
-          const data = await response.json();
-          if (data.success) {
-            resultDiv.innerHTML += `<p class="text-green-300">Tx to ${tx.recipient}: Success! Hash: ${data.txHash} (${data.fiatAmount} USD)</p>`;
-          } else {
-            resultDiv.innerHTML += `<p class="text-red-300">Tx to ${tx.recipient}: Error: ${data.error}</p>`;
-          }
-        }
-        updateBalance();
+        await sendTx(window.currentTx);
+        sendTransaction(); // Resume sending remaining transactions
       } catch (error) {
-        resultDiv.innerHTML = `<p class="text-red-300">Failed to send: ${error.message}. Try again or check logs.</p>`;
+        document.getElementById('result').innerHTML += `<p class="text-red-300">Tx to ${window.currentTx.recipient}: Error: ${error.message}</p>`;
       }
+    } else {
+      document.getElementById('result').innerHTML = '<p class="text-red-300">Invalid 2FA code</p>';
     }
-  </script>
+  }
+
+  async function sendTx(tx) {
+    const response = await fetch('/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...tx, currency: document.getElementById('currency').value }),
+    });
+    const data = await response.json();
+    const resultDiv = document.getElementById('result');
+    if (data.success) {
+      resultDiv.innerHTML += `<p class="text-green-300">Tx to ${tx.recipient}: Success! Hash: ${data.txHash} (${data.fiatAmount} ${data.currency})</p>`;
+    } else {
+      resultDiv.innerHTML += `<p class="text-red-300">Tx to ${tx.recipient}: Error: ${data.error}</p>`;
+    }
+  }
+
+async function tapToPay() {
+  console.log('Tap to Pay clicked');
+  const resultDiv = document.getElementById('result');
+  resultDiv.innerHTML = '<p class="text-yellow-300">Simulating NFC tap...</p>';
+  console.log('Simulating NFC tap displayed');
+  const tx = { amount: document.getElementById('amount1').value, recipient: 'rLqoPNccpG4zEJX99cfoXZbHJGWWB8Q2VP' };
+  console.log('Transaction prepared:', tx);
+  await sendTx(tx);
+  updateBalance();
+}
+</script>
 </body>
 </html>

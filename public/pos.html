@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DualPOS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: linear-gradient(to bottom right, #1e3a8a, #60a5fa); min-height: 100vh; }
+    .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+    .hover-scale:hover { transform: scale(1.05); transition: transform 0.2s ease-in-out; }
+  </style>
+</head>
+<body class="flex items-center justify-center p-4">
+  <div class="w-full max-w-md glass rounded-xl shadow-lg p-6 text-white">
+    <h1 class="text-3xl font-bold text-center mb-4">DualPOS</h1>
+    <div class="space-y-4">
+      <input type="number" id="amount" placeholder="Amount in USD" step="0.01" class="w-full p-2 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none">
+      <button onclick="generatePayment()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold hover-scale">Generate QR</button>
+    </div>
+    <div id="qrCode" class="mt-4 text-center"></div>
+    <p id="result" class="mt-4 text-sm"></p>
+  </div>
+  <script>
+    async function generatePayment() {
+      const amount = document.getElementById('amount').value;
+      const response = await fetch('/pos-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, currency: 'usd' })
+      });
+      const data = await response.json();
+      if (data.success) {
+        document.getElementById('qrCode').innerHTML = `<p>Scan this address: ${data.address} with ${data.xrpAmount} XRP</p>`;
+        checkPayment(data.txId);
+      } else {
+        document.getElementById('result').textContent = `Error: ${data.error}`;
+      }
+    }
+    async function checkPayment(txId) {
+      const resultDiv = document.getElementById('result');
+      resultDiv.textContent = 'Waiting for payment...';
+      const interval = setInterval(async () => {
+        const response = await fetch(`/check-payment/${txId}`);
+        const data = await response.json();
+        if (data.status === 'completed') {
+          clearInterval(interval);
+          resultDiv.textContent = `Payment received: ${data.fiatAmount} USD`;
+        }
+      }, 5000);
+    }
+  </script>
+</body>
+</html>
