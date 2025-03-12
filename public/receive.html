@@ -3,37 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DualPay - Receive</title>
+  <title>DualPay - Receive XRP</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     body { background: linear-gradient(to bottom right, #1e3a8a, #60a5fa); min-height: 100vh; }
     .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
-    .hover-scale:hover { transform: scale(1.05); transition: transform 0.2s ease-in-out; }
+    .hover-scale:hover { transform: scale(1.05); transition: transform 0.2s; }
   </style>
 </head>
 <body class="flex items-center justify-center p-4">
   <div class="w-full max-w-md glass rounded-xl shadow-lg p-6 text-white">
     <h1 class="text-3xl font-bold text-center mb-4">Receive XRP</h1>
-    <p class="text-center mb-6">Wallet Balance: <span id="balance" class="font-semibold">Loading...</span> XRP</p>
-    <div class="text-center">
-      <p class="text-lg">Your Address:</p>
-      <p id="walletAddress" class="text-sm break-all bg-gray-800 p-2 rounded-lg mt-2">raVYEbj4zSwpJSz8XyrkfPENj7DEvhsw34</p>
-      <button onclick="navigator.clipboard.writeText(document.getElementById('walletAddress').textContent)" class="mt-4 py-2 px-4 bg-green-600 hover:bg-green-700 rounded-lg font-semibold hover-scale">Copy Address</button>
+    <div class="space-y-4">
+      <p class="text-center">Wallet Address:</p>
+      <p id="address" class="text-center font-mono break-all bg-gray-800 p-2 rounded-lg">raVYEbj4zSwpJSz8XyrkfPENj7DEvhsw34</p>
+      <div id="qrcode" class="flex justify-center mb-4"></div>
+      <button onclick="copyAddress()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold hover-scale">Copy Address</button>
+      <a href="/home" class="block w-full py-3 bg-gray-600 hover:bg-gray-700 rounded-lg font-semibold text-center hover-scale">Back to Home</a>
     </div>
+    <p id="message" class="text-green-300 text-center mt-4"></p>
   </div>
   <script>
-    async function updateBalance() {
-      const balanceSpan = document.getElementById('balance');
-      try {
-        const response = await fetch('/balance');
-        const data = await response.json();
-        balanceSpan.textContent = data.success ? data.balance : 'Error';
-      } catch (error) {
-        balanceSpan.textContent = 'Error';
-      }
+    const walletAddress = 'raVYEbj4zSwpJSz8XyrkfPENj7DEvhsw34';
+    // Generate QR code
+    new QRCode(document.getElementById('qrcode'), {
+      text: walletAddress,
+      width: 128,
+      height: 128,
+      colorDark: '#000000',
+      colorLight: '#ffffff'
+    });
+    function copyAddress() {
+      navigator.clipboard.writeText(walletAddress).then(() => {
+        document.getElementById('message').textContent = 'Address copied to clipboard!';
+        setTimeout(() => document.getElementById('message').textContent = '', 2000);
+      });
     }
-    updateBalance();
-    setInterval(updateBalance, 30000);
   </script>
 </body>
 </html>
