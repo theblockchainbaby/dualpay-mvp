@@ -85,9 +85,19 @@ app.get('/balance', async (req, res) => {
   }
 });
 
-app.get('*', (req, res) => {
-  console.log('GET request received:', req.path);
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Serve home page by default
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'home.html'));
+});
+
+// Serve send page
+app.get('/send', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'send.html'));
+});
+
+// Serve receive page
+app.get('/receive', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'receive.html'));
 });
 
 app.listen(3000, () => console.log('Server running at http://localhost:3000'));

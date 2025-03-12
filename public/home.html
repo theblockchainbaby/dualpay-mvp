@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DualPay - Home</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(to bottom right, #1e3a8a, #60a5fa);
+      min-height: 100vh;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .hover-scale:hover {
+      transform: scale(1.05);
+      transition: transform 0.2s ease-in-out;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center p-4">
+  <div class="w-full max-w-md glass rounded-xl shadow-lg p-6 text-white">
+    <h1 class="text-3xl font-bold text-center mb-4">DualPay</h1>
+    <p class="text-center mb-6">Wallet Balance: <span id="balance" class="font-semibold">Loading...</span> XRP</p>
+    <div class="flex justify-center space-x-4">
+      <a href="/send" class="py-3 px-6 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold hover-scale">Send XRP</a>
+      <a href="/receive" class="py-3 px-6 bg-green-600 hover:bg-green-700 rounded-lg font-semibold hover-scale">Receive XRP</a>
+    </div>
+  </div>
+
+  <script>
+    async function updateBalance() {
+      const balanceSpan = document.getElementById('balance');
+      try {
+        const response = await fetch('/balance');
+        const data = await response.json();
+        balanceSpan.textContent = data.success ? data.balance : 'Error';
+      } catch (error) {
+        balanceSpan.textContent = 'Error';
+      }
+    }
+    updateBalance();
+    setInterval(updateBalance, 30000);
+  </script>
+</body>
+</html>
