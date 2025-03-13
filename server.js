@@ -1,6 +1,7 @@
 const express = require('express');
 const { Client, Wallet } = require('xrpl');
 const WebSocket = require('ws');
+const QRCode = require('qrcode');
 const app = express();
 const server = require('http').createServer(app);
 const wss = new WebSocket.Server({ server });
@@ -30,6 +31,32 @@ wss.on('connection', (ws) => {
       });
     }
   });
+});
+
+app.get('/balance', async (req, res) => {
+  try {
+    const accountInfo = await client.request({
+      command: 'account_info',
+      account: wallet.address,
+      ledger_index: 'validated'
+    });
+    const xrpBalance = (parseInt(accountInfo.result.account_data.Balance) / 1000000).toFixed(2);
+    const usdBalance = (xrpBalance * 2).toFixed(2);
+    res.json({ xrp: xrpBalance, usd: usdBalance });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch balance' });
+  }
+});
+
+app.get('/generate-qr', async (req, res) => {
+  try {
+    const qrDataUrl = await QRCode.toDataURL(wallet.address);
+    res.json({ qr: qrDataUrl, address: wallet.address });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to generate QR code' });
+  }
 });
 
 app.post('/send', async (req, res) => {
