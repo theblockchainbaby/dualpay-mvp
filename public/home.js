@@ -1,163 +1,175 @@
-const ws = new WebSocket('ws://localhost:3000');
-const balanceSpan = document.getElementById('balance');
-const sendOrRequest = document.getElementById('sendOrRequest');
-const actionModal = document.getElementById('actionModal');
-const sendPayOption = document.getElementById('sendPayOption');
-const requestOption = document.getElementById('requestOption');
-const sendPayContent = document.getElementById('sendPayContent');
-const requestContent = document.getElementById('requestContent');
-let html5QrCode;
-let isScannerRunning = false;
+document.addEventListener('DOMContentLoaded', () => {
+  const xrpBalanceSpan = document.getElementById('xrpBalance');
+  const usdBalanceSpan = document.getElementById('usdBalance');
+  const sendOrRequest = document.getElementById('sendOrRequest');
+  const actionModal = document.getElementById('actionModal');
+  const sendPayOption = document.getElementById('sendPayOption');
+  const requestOption = document.getElementById('requestOption');
+  const sendPayContent = document.getElementById('sendPayContent');
+  const requestContent = document.getElementById('requestContent');
 
-// Check if Html5Qrcode is available
-console.log('Html5Qrcode available:', typeof Html5Qrcode !== 'undefined');
-if (typeof Html5Qrcode === 'undefined') {
-  console.error('html5-qrcode library not loaded. Attempting to load dynamically.');
-  const script = document.createElement('script');
-  script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
-  script.onload = () => console.log('html5-qrcode loaded dynamically');
-  script.onerror = () => console.error('Failed to load html5-qrcode dynamically');
-  document.head.appendChild(script);
-}
+  // Debugging element existence
+  console.log('Elements found:', {
+    xrpBalanceSpan,
+    usdBalanceSpan,
+    sendOrRequest,
+    actionModal,
+    sendPayOption,
+    requestOption,
+    sendPayContent,
+    requestContent
+  });
 
-ws.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  if (data.type === 'balance') {
-    balanceSpan.textContent = data.balance.toFixed(2);
-  } else if (data.type === 'payment') {
-    alert(`Payment ${data.status}: ${data.tx.hash}`);
+  let html5QrCode;
+  let isScannerRunning = false;
+
+  console.log('Checking Html5Qrcode availability:', typeof Html5Qrcode !== 'undefined');
+  if (typeof Html5Qrcode === 'undefined') {
+    console.error('html5-qrcode library not loaded. Attempting to load dynamically.');
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+    script.onload = () => {
+      console.log('html5-qrcode loaded dynamically');
+    };
+    script.onerror = () => console.error('Failed to load html5-qrcode dynamically');
+    document.head.appendChild(script);
   }
-};
 
-sendOrRequest.addEventListener('click', () => {
-  console.log('Send/Pay or Request button clicked');
-  actionModal.style.display = 'block';
-  showOption('sendPay');
-});
+  // Use localhost for WebSocket since you're testing locally
+  const ws = new WebSocket('ws://localhost:3000');
 
-actionModal.addEventListener('click', (e) => {
-  if (e.target === actionModal) {
-    actionModal.style.display = 'none';
-    stopScanner();
-  }
-});
+  ws.onopen = () => {
+    console.log('WebSocket connection opened');
+  };
 
-sendPayOption.addEventListener('click', () => {
-  console.log('Send/Pay tab clicked, attempting to switch');
-  showOption('sendPay');
-});
-requestOption.addEventListener('click', () => {
-  console.log('Request tab clicked');
-  showOption('request');
-});
+  ws.onerror = (error) => {
+    console.error('WebSocket error:', error);
+  };
 
-function showOption(optionName) {
-  sendPayOption.classList.remove('active');
-  requestOption.classList.remove('active');
-  sendPayContent.classList.remove('active');
-  requestContent.classList.remove('active');
-
-  if (optionName === 'sendPay' && typeof Html5Qrcode !== 'undefined') {
-    console.log('Activating Send/Pay tab');
-    sendPayOption.classList.add('active');
-    sendPayContent.classList.add('active');
-    if (!isScannerRunning || !html5QrCode) {
-      console.log('Scanner not running or not initialized, starting new scanner');
-      startQrScanner();
-    } else {
-      console.log('Scanner already running, skipping restart');
+  ws.onmessage = (event) => {
+    console.log('WebSocket message received:', event.data);
+    try {
+      const data = JSON.parse(event.data);
+      console.log('Parsed WebSocket data:', data);
+      if (data.type === 'balance' && xrpBalanceSpan && usdBalanceSpan) {
+        xrpBalanceSpan.textContent = data.xrpBalance || 'N/A';
+        usdBalanceSpan.textContent = `= $${data.usdBalance || 'N/A'} USD`;
+        console.log('Balance updated:', xrpBalanceSpan.textContent, usdBalanceSpan.textContent);
+      } else if (data.type === 'payment') {
+        alert(`Payment ${data.status}: ${data.tx.hash}`);
+      }
+    } catch (error) {
+      console.error('Error parsing WebSocket message:', error);
+      xrpBalanceSpan.textContent = 'Error';
+      usdBalanceSpan.textContent = '= $Error';
     }
-  } else if (optionName === 'request') {
-    console.log('Activating Request tab');
-    requestOption.classList.add('active');
-    requestContent.classList.add('active');
-    stopScanner();
-  } else if (optionName === 'sendPay' && typeof Html5Qrcode === 'undefined') {
-    console.error('Html5Qrcode not available yet. Please try again.');
-    alert('QR scanning is not available. Please refresh the page or check your network.');
-  }
-}
+  };
 
-function startQrScanner() {
-  console.log('Starting QR scanner');
-  try {
+  // Fallback fetch if WebSocket isn’t sending initial balance
+  async function fetchBalance() {
+    try {
+      const response = await fetch('/balance');
+      if (!response.ok) throw new Error('Fetch failed');
+      const data = await response.json();
+      console.log('Fetched balance:', data);
+      if (xrpBalanceSpan && usdBalanceSpan) {
+        xrpBalanceSpan.textContent = data.xrpBalance;
+        usdBalanceSpan.textContent = `= $${data.usdBalance} USD`;
+      }
+    } catch (error) {
+      console.error('Fetch error:', error.message);
+      if (xrpBalanceSpan && usdBalanceSpan) {
+        xrpBalanceSpan.textContent = 'Error';
+        usdBalanceSpan.textContent = '= $Error';
+      }
+    }
+  }
+  fetchBalance(); // Initial fetch
+  // setInterval(fetchBalance, 300000); // Uncomment if WebSocket updates fail
+
+  if (sendOrRequest) {
+    sendOrRequest.addEventListener('click', () => {
+      console.log('Send/Pay or Request button clicked');
+      if (actionModal) {
+        actionModal.style.display = 'block';
+        showOption('sendPay');
+      }
+    });
+  }
+
+  if (actionModal) {
+    actionModal.addEventListener('click', (e) => {
+      if (e.target === actionModal) {
+        actionModal.style.display = 'none';
+        stopScanner();
+      }
+    });
+  }
+
+  if (sendPayOption) {
+    sendPayOption.addEventListener('click', () => {
+      showOption('sendPay');
+    });
+  }
+
+  if (requestOption) {
+    requestOption.addEventListener('click', () => {
+      showOption('request');
+    });
+  }
+
+  function showOption(optionName) {
+    if (!sendPayOption || !requestOption || !sendPayContent || !requestContent) return;
+    sendPayOption.classList.remove('active');
+    requestOption.classList.remove('active');
+    sendPayContent.classList.remove('active');
+    requestContent.classList.remove('active');
+
+    if (optionName === 'sendPay') {
+      sendPayOption.classList.add('active');
+      sendPayContent.classList.add('active');
+      if (!isScannerRunning) startQrScanner();
+    } else if (optionName === 'request') {
+      requestOption.classList.add('active');
+      requestContent.classList.add('active');
+      stopScanner();
+    }
+  }
+
+  function startQrScanner() {
+    console.log('Starting QR scanner');
+    if (typeof Html5Qrcode === 'undefined') {
+      console.error('Html5Qrcode not available');
+      return;
+    }
+    html5QrCode = new Html5Qrcode('qrScanner');
+    const qrConfig = { fps: 10, qrbox: { width: 250, height: 250 } };
+    html5QrCode.start(
+      { facingMode: 'environment' },
+      qrConfig,
+      (decodedText) => {
+        console.log('QR Code scanned:', decodedText);
+        html5QrCode.stop();
+        isScannerRunning = false;
+        actionModal.style.display = 'none';
+        // Add logic to handle scanned wallet address if needed
+      },
+      (error) => {
+        console.log('QR scan error:', error);
+      }
+    ).then(() => {
+      isScannerRunning = true;
+    }).catch((err) => {
+      console.error('Failed to start QR scanner:', err);
+    });
+  }
+
+  function stopScanner() {
     if (html5QrCode && isScannerRunning) {
       html5QrCode.stop().then(() => {
-        console.log('Previous scanner stopped');
         isScannerRunning = false;
-        proceedWithNewScanner();
-      }).catch(err => {
-        console.error('Error stopping previous scanner:', err);
-        isScannerRunning = false;
-        proceedWithNewScanner();
-      });
-    } else {
-      proceedWithNewScanner();
+        console.log('QR scanner stopped');
+      }).catch((err) => console.error('Error stopping QR scanner:', err));
     }
-  } catch (err) {
-    console.error('Error initializing QR scanner setup:', err);
-    alert('Error initializing QR scanner setup: ' + err);
-    isScannerRunning = false;
   }
-}
-
-function proceedWithNewScanner() {
-  console.log('Initializing new QR scanner');
-  html5QrCode = new Html5Qrcode('qrScanner');
-  html5QrCode.start(
-    { facingMode: 'environment' },
-    { fps: 10, qrbox: { width: 250, height: 250 } },
-    (decodedText) => {
-      console.log('QR code scanned:', decodedText);
-      stopScanner();
-      actionModal.style.display = 'none';
-      initiatePayment(decodedText);
-    },
-    (errorMessage) => {
-      console.error('QR Scan Error:', errorMessage);
-    }
-  ).then(() => {
-    console.log('Camera started successfully');
-    isScannerRunning = true;
-  }).catch((err) => {
-    console.error('Failed to start camera:', err);
-    alert('Failed to start camera: ' + err);
-    isScannerRunning = false;
-  });
-}
-
-function stopScanner() {
-  if (html5QrCode && isScannerRunning) {
-    html5QrCode.stop().then(() => {
-      console.log('Camera stopped successfully');
-      isScannerRunning = false;
-    }).catch(err => {
-      console.error('Error stopping camera:', err);
-      isScannerRunning = false;
-    });
-  } else {
-    console.log('No scanner running to stop');
-    isScannerRunning = false;
-  }
-}
-
-function initiatePayment(address) {
-  const amount = prompt('Enter amount in USD:');
-  if (!amount || amount <= 0) {
-    alert('Please enter a valid amount.');
-    return;
-  }
-  fetch('/send', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ amount, recipient: address, currency: 'usd' })
-  })
-  .then(res => res.json())
-  .then(data => {
-    alert(data.message || 'Payment sent!');
-  })
-  .catch(err => {
-    alert('Payment failed.');
-    console.error(err);
-  });
-}
+});
