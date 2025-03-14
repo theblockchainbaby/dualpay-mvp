@@ -4,71 +4,245 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DualPay</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="/home.js" defer></script>
   <style>
-    body { background-color: #000; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-    .card { background: linear-gradient(135deg, #2A2A2A 0%, #1A1A1A 100%); border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-    .action-button { background: #000; color: white; border: 1px solid #666; border-radius: 9999px; padding: 10px 20px; font-weight: 600; transition: background 0.2s; }
-    .action-button:hover { background: #333; }
-    .transaction-item { border-bottom: 1px solid #333; padding: 12px 0; }
-    .transaction-item:last-child { border-bottom: none; }
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 50; }
-    .modal-content { background: #1A1A1A; border-radius: 20px; padding: 20px; margin: 20% auto; width: 80%; max-width: 400px; color: white; }
-    .modal-button { background: #FF2D55; color: white; border-radius: 12px; padding: 12px; margin: 10px 0; text-align: center; cursor: pointer; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      background: #fff;
+      color: #000;
+    }
+    .header {
+      display: flex;
+      justify-content: flex-start;
+      padding: 10px 15px;
+      background: #f8f8f8;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .header button {
+      background: none;
+      border: none;
+      font-size: 16px;
+      color: #007aff;
+      cursor: pointer;
+    }
+    .card {
+      background: #000;
+      border-radius: 15px;
+      margin: 15px;
+      height: 200px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 50%, rgba(128, 0, 128, 0.2), transparent 50%),
+                  url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><circle cx="10" cy="10" r="2" fill="rgba(128, 0, 128, 0.5)"/></svg>') repeat;
+      background-size: 25px 25px;
+      opacity: 0.7;
+    }
+    .card-title {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      color: #fff;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    .balance-section {
+      padding: 15px;
+    }
+    .balance-label {
+      font-size: 16px;
+      color: #666;
+    }
+    .balance-amount {
+      font-size: 36px;
+      font-weight: 600;
+      margin: 5px 0;
+    }
+    .usd-balance {
+      font-size: 16px;
+      color: #666;
+      margin-top: -10px;
+    }
+    .action-button {
+      background: #000;
+      color: #fff;
+      border: none;
+      border-radius: 25px;
+      padding: 12px 20px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      max-width: 300px;
+      margin: 0 auto;
+      display: block;
+    }
+    .transactions {
+      padding: 15px;
+    }
+    .transactions h2 {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+    .transaction {
+      display: flex;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+      font-size: 18px;
+      color: #fff;
+    }
+    .transaction-details {
+      flex: 1;
+    }
+    .transaction-name {
+      font-size: 16px;
+      font-weight: 500;
+    }
+    .transaction-date {
+      font-size: 14px;
+      color: #666;
+    }
+    .transaction-amount {
+      font-size: 16px;
+      font-weight: 500;
+    }
+    .transaction-amount.positive {
+      color: #34c759;
+    }
+    .transaction-amount.negative {
+      color: #000;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background: #fff;
+      margin: 20% auto;
+      padding: 0;
+      width: 80%;
+      max-width: 350px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .option-bar {
+      display: flex;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .option {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      font-weight: 500;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #666;
+    }
+    .option.active {
+      color: #000;
+      border-bottom: 2px solid #000;
+    }
+    .option-content {
+      padding: 20px;
+      display: none;
+    }
+    .option-content.active {
+      display: block;
+    }
+    .scan-message {
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    #qrScanner {
+      width: 100%;
+      height: 200px;
+    }
+    #qrImage {
+      width: 100%;
+      max-width: 200px;
+    }
+    #walletAddress {
+      font-size: 14px;
+      color: #666;
+      margin-top: 10px;
+    }
   </style>
 </head>
-<body class="text-white">
-  <div class="max-w-md mx-auto p-4">
-    <!-- Header Card -->
-    <div class="card p-4 mb-4">
-      <div class="flex items-center">
-        <h1 class="text-2xl font-bold text-white">DualPay</h1>
-        <button id="qrButton" class="ml-auto text-gray-400">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m0 14v1m-8-9h1m14 0h1m-9-8v1m0 14v1m-8-9h1m14 0h1m-5-5h.01M5 12h.01m14 0h.01m-5 5h.01M5 12h.01m14 0h.01m-5-5h.01M5 12h.01m14 0h.01" />
-          </svg>
-        </button>
+<body>
+  <div class="header">
+    <button onclick="window.location.href='/home.html'">Done</button>
+  </div>
+  <div class="card">
+    <div class="card-title">DualPay</div>
+  </div>
+  <div class="balance-section">
+    <div class="balance-label">Balance</div>
+    <div class="balance-amount"><span id="xrpBalance">Loading...</span> XRP</div>
+    <div class="usd-balance" id="usdBalance">= $Loading... USD</div>
+    <button class="action-button" id="sendOrRequest">Send/Pay or Request</button>
+  </div>
+  <div class="transactions">
+    <h2>Latest Transactions</h2>
+    <div class="transaction">
+      <div class="avatar">Z</div>
+      <div class="transaction-details">
+        <div class="transaction-name">Zuri</div>
+        <div class="transaction-date">2/19/25</div>
       </div>
-      <div class="mt-4 text-center">
-        <p class="text-gray-400 text-sm">Balance</p>
-        <p id="balance" class="text-4xl font-semibold">Loading...</p>
+      <div class="transaction-amount positive">+1.00 XRP</div>
+    </div>
+    <div class="transaction">
+      <div class="avatar">C</div>
+      <div class="transaction-details">
+        <div class="transaction-name">Cassidy</div>
+        <div class="transaction-date">2/14/25</div>
       </div>
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="flex justify-center mb-6">
-      <button id="actionButton" class="action-button">Send or Request</button>
-    </div>
-
-    <!-- Tap to Pay -->
-    <div id="tapArea" class="bg-red-500 text-white rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6 hidden">Tap to Pay</div>
-
-    <!-- Status -->
-    <div id="status" class="text-center text-gray-400 mb-6"></div>
-
-    <!-- Latest Transactions -->
-    <div>
-      <h2 class="text-lg font-semibold mb-2">Latest Transactions</h2>
-      <div id="transactions" class="bg-gray-900 rounded-lg p-4"></div>
+      <div class="transaction-amount negative">-0.80 XRP</div>
     </div>
   </div>
-
-  <!-- QR Code Modal -->
-  <div id="qrModal" class="modal">
+  <div id="actionModal" class="modal">
     <div class="modal-content">
-      <h2 class="text-xl font-bold mb-4 text-center">QR Code</h2>
-      <div id="scanOption" class="modal-button">Scan QR Code to Pay</div>
-      <div id="myCodeOption" class="modal-button">My Code</div>
-      <div id="qrDisplay" class="mt-4 hidden text-center">
-        <img id="qrImage" src="" alt="Your QR Code" class="mx-auto" />
-        <p id="qrAddress" class="text-gray-400 mt-2"></p>
+      <div class="option-bar">
+        <button class="option active" id="sendPayOption">Send/Pay</button>
+        <button class="option" id="requestOption">Request</button>
       </div>
-      <div id="qrScanner" class="mt-4 hidden" style="width: 100%; height: 300px;"></div>
-      <button id="closeModal" class="text-gray-400 mt-4 w-full text-center">Close</button>
+      <div class="option-content active" id="sendPayContent">
+        <div class="scan-message">Scan QR code to Send XRP or Pay</div>
+        <div id="qrScanner"></div>
+      </div>
+      <div class="option-content" id="requestContent">
+        <img id="qrImage" src="/qr" alt="My QR Code">
+        <div id="walletAddress">Wallet: rCP2PFbY3VqyomvwBqe2tmfdH5h9CiUUo</div>
+      </div>
     </div>
   </div>
-
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-  <script src="/home.js"></script>
 </body>
 </html>
