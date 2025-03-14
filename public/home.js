@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Use localhost for WebSocket since you're testing locally
-  const ws = new WebSocket('ws://localhost:3000');
+const ws = new WebSocket('ws://192.168.0.100:3000');
 
   ws.onopen = () => {
     console.log('WebSocket connection opened');
