@@ -4,35 +4,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DualPay</title>
-  <script src="/home.js" defer></script>
   <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
       margin: 0;
-      background: #fff;
-      color: #000;
-    }
-    .header {
+      padding: 0;
+      background-color: #f5f5f5;
+      min-height: 100vh;
       display: flex;
-      justify-content: flex-start;
-      padding: 10px 15px;
-      background: #f8f8f8;
-      border-bottom: 1px solid #e0e0e0;
+      justify-content: center;
+      align-items: flex-start;
     }
-    .header button {
-      background: none;
-      border: none;
-      font-size: 16px;
-      color: #007aff;
-      cursor: pointer;
+    .container {
+      width: 100%;
+      max-width: 400px;
+      margin: 20px auto;
     }
     .card {
-      background: #000;
-      border-radius: 15px;
-      margin: 15px;
+      background: linear-gradient(to bottom, #000 0%, #1a1a1a 100%);
+      width: 100%;
       height: 200px;
+      border-radius: 20px;
       position: relative;
+      margin-bottom: 20px;
       overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     .card::before {
       content: '';
@@ -41,75 +37,88 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: radial-gradient(circle at 50% 50%, rgba(128, 0, 128, 0.2), transparent 50%),
-                  url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><circle cx="10" cy="10" r="2" fill="rgba(128, 0, 128, 0.5)"/></svg>') repeat;
-      background-size: 25px 25px;
-      opacity: 0.7;
+      background: radial-gradient(circle at 20% 20%, rgba(0, 122, 255, 0.3), transparent 70%);
+      opacity: 0.5;
     }
-    .card-title {
-      position: absolute;
-      top: 15px;
-      left: 15px;
-      color: #fff;
+    .header {
+      color: white;
+      padding: 20px;
+      text-align: left;
       font-size: 24px;
       font-weight: 600;
+      position: relative;
+      z-index: 1;
     }
     .balance-section {
-      padding: 15px;
+      padding: 20px;
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .balance-info {
+      text-align: left;
     }
     .balance-label {
-      font-size: 16px;
-      color: #666;
+      font-size: 14px;
+      color: #8e8e93;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 5px;
     }
     .balance-amount {
       font-size: 36px;
-      font-weight: 600;
-      margin: 5px 0;
+      font-weight: 700;
+      color: #fff;
+      margin: 10px 0;
     }
     .usd-balance {
       font-size: 16px;
-      color: #666;
-      margin-top: -10px;
+      color: #8e8e93;
     }
     .action-button {
-      background: #000;
+      background-color: #000;
       color: #fff;
-      border: none;
-      border-radius: 25px;
-      padding: 12px 20px;
+      border: 1px solid #8e8e93;
+      padding: 10px 20px;
+      border-radius: 30px;
       font-size: 16px;
-      font-weight: 600;
+      font-weight: 500;
       cursor: pointer;
-      width: 100%;
-      max-width: 300px;
-      margin: 0 auto;
-      display: block;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .action-button:hover {
+      background-color: #fff;
+      color: #000;
     }
     .transactions {
-      padding: 15px;
+      padding: 0 20px;
     }
     .transactions h2 {
       font-size: 16px;
-      color: #666;
-      margin-bottom: 10px;
+      color: #000;
+      margin: 20px 0 10px;
+      font-weight: 600;
     }
     .transaction {
       display: flex;
       align-items: center;
       padding: 10px 0;
-      border-bottom: 1px solid #e0e0e0;
+      border-bottom: 1px solid #e5e5e5;
     }
     .avatar {
       width: 40px;
       height: 40px;
+      background-color: #007aff;
+      color: white;
       border-radius: 50%;
-      background: #ccc;
       display: flex;
       align-items: center;
       justify-content: center;
+      font-weight: 600;
+      font-size: 16px;
       margin-right: 10px;
-      font-size: 18px;
-      color: #fff;
     }
     .transaction-details {
       flex: 1;
@@ -117,20 +126,21 @@
     .transaction-name {
       font-size: 16px;
       font-weight: 500;
+      color: #000;
     }
     .transaction-date {
-      font-size: 14px;
-      color: #666;
+      font-size: 12px;
+      color: #8e8e93;
     }
     .transaction-amount {
       font-size: 16px;
       font-weight: 500;
     }
-    .transaction-amount.positive {
+    .positive {
       color: #34c759;
     }
-    .transaction-amount.negative {
-      color: #000;
+    .negative {
+      color: #ff2d55;
     }
     .modal {
       display: none;
@@ -139,110 +149,148 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.5);
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
     }
     .modal-content {
-      background: #fff;
-      margin: 20% auto;
-      padding: 0;
-      width: 80%;
-      max-width: 350px;
-      border-radius: 10px;
-      text-align: center;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 400px;
+      position: relative;
     }
-    .option-bar {
+    .modal-tabs {
       display: flex;
-      border-bottom: 1px solid #e0e0e0;
+      border-bottom: 1px solid #e5e5e5;
+      margin-bottom: 20px;
     }
-    .option {
+    .tab {
       flex: 1;
       padding: 10px;
-      font-size: 16px;
-      font-weight: 500;
-      background: none;
-      border: none;
+      text-align: center;
       cursor: pointer;
-      color: #666;
+      font-weight: 500;
+      color: #8e8e93;
     }
-    .option.active {
+    .tab.active {
+      border-bottom: 2px solid #007aff;
       color: #000;
-      border-bottom: 2px solid #000;
     }
-    .option-content {
-      padding: 20px;
+    .tab-content {
       display: none;
     }
-    .option-content.active {
+    .tab-content.active {
       display: block;
-    }
-    .scan-message {
-      font-size: 16px;
-      margin-bottom: 10px;
-      color: #333;
     }
     #qrScanner {
       width: 100%;
-      height: 200px;
+      max-width: 300px;
+      margin: 0 auto 20px;
     }
-    #qrImage {
-      width: 100%;
-      max-width: 200px;
-    }
-    #walletAddress {
+    #toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 10px;
+      display: none;
+      z-index: 1000;
       font-size: 14px;
-      color: #666;
+    }
+    .manual-input {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .manual-input input, .manual-input select {
+      display: block;
+      margin: 10px auto;
+      padding: 10px;
+      width: 90%;
+      max-width: 300px;
+      border: 1px solid #d1d1d6;
+      border-radius: 10px;
+      font-size: 16px;
+      color: #000;
+    }
+    .manual-input button {
+      padding: 12px 20px;
+      background-color: #007aff;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: 500;
+      cursor: pointer;
       margin-top: 10px;
+    }
+    .manual-input button:hover {
+      background-color: #005bb5;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <button onclick="window.location.href='/home.html'">Done</button>
-  </div>
-  <div class="card">
-    <div class="card-title">DualPay</div>
-  </div>
-  <div class="balance-section">
-    <div class="balance-label">Balance</div>
-    <div class="balance-amount"><span id="xrpBalance">Loading...</span> XRP</div>
-    <div class="usd-balance" id="usdBalance">= $Loading... USD</div>
-    <button class="action-button" id="sendOrRequest">Send/Pay or Request</button>
-  </div>
-  <div class="transactions">
-    <h2>Latest Transactions</h2>
-    <div class="transaction">
-      <div class="avatar">Z</div>
-      <div class="transaction-details">
-        <div class="transaction-name">Zuri</div>
-        <div class="transaction-date">2/19/25</div>
+  <div id="toast"></div>
+  <div class="container">
+    <div class="card">
+      <div class="header">DualPay</div>
+      <div class="balance-section">
+        <div class="balance-info">
+          <div class="balance-label">Balance</div>
+          <div class="balance-amount"><span id="xrpBalance">Loading...</span> XRP</div>
+          <div class="usd-balance" id="usdBalance">= $Loading... USD</div>
+        </div>
+        <button class="action-button" id="sendOrRequest">Pay or Request</button>
       </div>
-      <div class="transaction-amount positive">+1.00 XRP</div>
     </div>
-    <div class="transaction">
-      <div class="avatar">C</div>
-      <div class="transaction-details">
-        <div class="transaction-name">Cassidy</div>
-        <div class="transaction-date">2/14/25</div>
+    <div class="transactions">
+      <h2>Latest Transactions</h2>
+      <div class="transaction">
+        <div class="avatar">Z</div>
+        <div class="transaction-details">
+          <div class="transaction-name">Zuri</div>
+          <div class="transaction-date">2/19/25</div>
+        </div>
+        <div class="transaction-amount positive">+1.00 XRP</div>
       </div>
-      <div class="transaction-amount negative">-0.80 XRP</div>
+      <div class="transaction">
+        <div class="avatar">C</div>
+        <div class="transaction-details">
+          <div class="transaction-name">Cassidy</div>
+          <div class="transaction-date">2/14/25</div>
+        </div>
+        <div class="transaction-amount negative">-0.80 XRP</div>
+      </div>
     </div>
   </div>
-  <div id="actionModal" class="modal">
+  <div class="modal" id="actionModal">
     <div class="modal-content">
-      <div class="option-bar">
-        <button class="option active" id="sendPayOption">Send/Pay</button>
-        <button class="option" id="requestOption">Request</button>
+      <div class="modal-tabs">
+        <div class="tab active" id="sendPayOption">Send/Pay</div>
+        <div class="tab" id="requestOption">Request</div>
       </div>
-      <div class="option-content active" id="sendPayContent">
-        <div class="scan-message">Scan QR code to Send XRP or Pay</div>
+      <div class="tab-content active" id="sendPayContent">
         <div id="qrScanner"></div>
+        <div class="manual-input">
+          <h3>Or Enter Manually</h3>
+          <input type="text" id="recipientAddress" placeholder="Enter recipient address (e.g., rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh)" />
+          <input type="number" id="sendAmount" placeholder="Amount (XRP)" step="0.01" />
+          <select id="sendCurrency">
+            <option value="XRP">XRP</option>
+          </select>
+          <button id="sendButton">Send</button>
+        </div>
       </div>
-      <div class="option-content" id="requestContent">
-        <img id="qrImage" src="/qr" alt="My QR Code">
-        <div id="walletAddress">Wallet: rCP2PFbY3VqyomvwBqe2tmfdH5h9CiUUo</div>
+      <div class="tab-content" id="requestContent">
+        <p>Request functionality coming soon.</p>
       </div>
     </div>
   </div>
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="home.js"></script>
 </body>
 </html>
