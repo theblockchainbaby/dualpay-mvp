@@ -1,80 +1,74 @@
 const express = require('express');
-const { Client, Wallet } = require('xrpl');
 const WebSocket = require('ws');
-const path = require('path');
+const xrpl = require('xrpl');
 const axios = require('axios');
-let isConnected = false; // Single declaration
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 5000; // 5 seconds
-let lastKnownPrice = 2.27; // Persistent fallback for CoinGecko
-
 const app = express();
-app.use(express.json());
+const port = 3000;
+
+// Serve static files from the 'public' directory
 app.use(express.static('public'));
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  next();
-});
 
-const server = app.listen(3000, '0.0.0.0', () => console.log('Server running at http://0.0.0.0:3000'));
-const wss = new WebSocket.Server({ server });
-const client = new Client('wss://s.altnet.rippletest.net:51233');
-const wallet = Wallet.fromSeed('sEd7oS7pWhHoNyzrJkeSSnT4xZ8NCRm'); // Matches rCP2PFbY3VqyomvwBqe2tmfdH5h9CiUUo
+app.use(express.json());
 
-console.log('Starting server...');
-console.log('Wallet initialized:', wallet.address);
+const wss = new WebSocket.Server({ port: 8080 });
 
-// Define routes
-app.get('/qr', (req, res) => res.sendFile(path.join(__dirname, 'xrp-qr.png')));
+let client;
+let wallet;
+let lastKnownPrice = 0;
+let lastPriceFetchTime = 0;
+const PRICE_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
-app.post('/login', (req, res) => {
-  const { passcode } = req.body;
-  console.log('POST /login received with passcode:', passcode);
-  if (passcode === '1234') {
-    console.log('Passcode verified, sending success');
-    res.json({ success: true });
-  } else {
-    res.status(401).json({ success: false, message: 'Invalid passcode' });
-  }
-});
+async function initialize() {
+  client = new xrpl.Client('wss://s.altnet.rippletest.net:51233');
+  await client.connect();
+  console.log('Connected to XRPL WebSocket');
 
-app.post('/send', async (req, res) => {
-  const { amount, recipient, currency } = req.body;
-  console.log('POST /send hit with:', { amount, recipient, currency });
-  if (!amount || !recipient || !currency) {
-    return res.status(400).json({ message: 'Missing required fields' });
-  }
+  wallet = xrpl.Wallet.fromSeed('sEd7n8PDAjj1gKDL8JAtJH8PhHAywA8');
+  console.log('Wallet initialized:', wallet.address);
+
+  await updateBalance();
+}
+
+async function updateBalance() {
   try {
-    const drops = Math.floor(parseFloat(amount) * 1000000).toString();
-    const payment = {
-      TransactionType: 'Payment',
-      Account: wallet.address,
-      Amount: drops,
-      Destination: recipient,
-      Fee: '12',
-      Flags: 0,
-      LastLedgerSequence: (await client.getLedgerIndex()) + 20,
-    };
-    const prepared = await client.autofill(payment);
-    const signed = wallet.sign(prepared);
-    const result = await client.submitAndWait(signed.tx_blob);
-    if (result.result.engine_result === 'tesSUCCESS') {
-      wss.clients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify({ type: 'payment', status: 'success', tx: result.result }));
+    const accountInfo = await client.request({
+      command: 'account_info',
+      account: wallet.address,
+      ledger_index: 'validated',
+    });
+    const xrpBalance = accountInfo.result.account_data.Balance / 1000000;
+    console.log('Fetched XRP balance:', xrpBalance);
+
+    let xrpPrice = lastKnownPrice;
+    const now = Date.now();
+    if (now - lastPriceFetchTime >= PRICE_CACHE_DURATION) {
+      try {
+        const response = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd');
+        xrpPrice = lastKnownPrice = response.data.ripple.usd;
+        lastPriceFetchTime = now;
+        console.log('Fetched XRP price from CoinGecko:', xrpPrice);
+      } catch (coinGeckoError) {
+        console.error('CoinGecko API error:', coinGeckoError.message);
+        if (coinGeckoError.response && coinGeckoError.response.status === 429) {
+          console.log('Rate limit exceeded, using last known price:', xrpPrice);
         }
-      });
-      res.json({ message: 'Payment sent successfully', txHash: result.result.hash });
+      }
     } else {
-      res.status(500).json({ message: 'Payment failed', result: result.result });
+      console.log('Using cached XRP price:', xrpPrice);
     }
+    const usdBalance = xrpBalance * xrpPrice;
+
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({ type: 'balance', xrpBalance: xrpBalance.toFixed(2), usdBalance: usdBalance.toFixed(2) }));
+      }
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Payment error', error: error.message });
+    console.error('Balance update error:', error.message);
   }
-});
+}
+
+setInterval(updateBalance, 60000); // Update balance every minute
 
 app.get('/balance', async (req, res) => {
   console.log('Received request for /balance');
@@ -86,12 +80,12 @@ app.get('/balance', async (req, res) => {
     });
     const xrpBalance = accountInfo.result.account_data.Balance / 1000000;
     console.log('Fetched XRP balance for /balance:', xrpBalance);
-    let xrpPrice = lastKnownPrice; // Use last known price by default
+    let xrpPrice = lastKnownPrice;
     const now = Date.now();
     if (now - lastPriceFetchTime >= PRICE_CACHE_DURATION) {
       try {
         const response = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd');
-        xrpPrice = lastKnownPrice = response.data.ripple.usd; // Update persistent price
+        xrpPrice = lastKnownPrice = response.data.ripple.usd;
         lastPriceFetchTime = now;
         console.log('Fetched XRP price for /balance from CoinGecko:', xrpPrice);
       } catch (coinGeckoError) {
@@ -111,87 +105,71 @@ app.get('/balance', async (req, res) => {
   }
 });
 
-wss.on('connection', (ws) => {
-  console.log('Client connected to WebSocket');
-  ws.on('close', () => console.log('Client disconnected from WebSocket'));
+app.post('/send', async (req, res) => {
+  console.log('POST /send hit with:', req.body);
+  const { amount, recipient, currency } = req.body;
+
+  // Validate input
+  if (!amount || !recipient || !currency) {
+    return res.status(400).json({ message: 'Missing required fields: amount, recipient, and currency are required' });
+  }
+
+  if (currency !== 'XRP') {
+    return res.status(400).json({ message: 'Only XRP currency is supported at this time' });
+  }
+
+  if (!recipient.startsWith('r') || recipient.length < 25 || recipient.length > 35) {
+    return res.status(400).json({ message: 'Invalid recipient address: Must be a valid XRP address starting with "r" and 25-35 characters long' });
+  }
+
+  try {
+    const amountInDrops = parseFloat(amount) * 1000000; // Convert XRP to drops
+    const payment = {
+      TransactionType: 'Payment',
+      Account: wallet.address,
+      Amount: amountInDrops.toString(),
+      Destination: recipient,
+    };
+
+    const signedTx = wallet.sign(payment);
+    const result = await client.submitAndWait(signedTx.tx_blob);
+    console.log('Payment result:', result);
+
+    if (result.result.meta.TransactionResult === 'tesSUCCESS') {
+      // Broadcast to WebSocket clients
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({ type: 'payment', status: 'success', tx: result.result }));
+        }
+      });
+
+      // Update balance after transaction
+      await updateBalance();
+
+      res.json({ message: 'Payment sent successfully', txHash: result.result.hash });
+    } else {
+      res.status(500).json({ message: 'Payment failed on ledger', result: result.result.meta.TransactionResult });
+    }
+  } catch (error) {
+    console.error('Payment error:', error.message);
+    res.status(500).json({ message: 'Payment failed: ' + error.message });
+  }
 });
 
-let lastUpdateTime = 0;
-const MIN_UPDATE_INTERVAL = 300000; // 5 minutes
-let lastPriceFetchTime = 0;
-const PRICE_CACHE_DURATION = 1800000; // 30 minutes
-
-async function updateBalance() {
-  const now = Date.now();
-  if (now - lastUpdateTime < MIN_UPDATE_INTERVAL) {
-    console.log('Skipping balance update, too soon since last update');
-    return;
-  }
-  let retries = 0;
-  while (retries < MAX_RETRIES) {
-    try {
-      if (!isConnected) {
-        console.log('XRPL not connected, attempting reconnect...');
-        await client.connect();
-      }
-      const accountInfo = await client.request({
-        command: 'account_info',
-        account: wallet.address,
-        ledger_index: 'validated',
-      });
-      const xrpBalance = accountInfo.result.account_data.Balance / 1000000;
-      console.log('Fetched XRP balance:', xrpBalance);
-      let xrpPrice = lastKnownPrice; // Use last known price
-      if (now - lastPriceFetchTime >= PRICE_CACHE_DURATION) {
-        try {
-          const response = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vs_currencies=usd');
-          xrpPrice = lastKnownPrice = response.data.ripple.usd; // Update persistent price
-          lastPriceFetchTime = now;
-          console.log('Fetched XRP price from CoinGecko:', xrpPrice);
-        } catch (coinGeckoError) {
-          console.error('CoinGecko API error:', coinGeckoError.message);
-          if (coinGeckoError.response && coinGeckoError.response.status === 429) {
-            console.log('Rate limit exceeded, using last known price:', xrpPrice);
-          }
-        }
-      } else {
-        console.log('Using cached XRP price:', xrpPrice);
-      }
-      const usdBalance = xrpBalance * xrpPrice;
-      wss.clients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify({ type: 'balance', xrpBalance: xrpBalance.toFixed(2), usdBalance: usdBalance.toFixed(2) }));
-        }
-      });
-      lastUpdateTime = now;
-      break; // Success, exit retry loop
-    } catch (error) {
-      console.error('Balance update error:', error.message);
-      retries++;
-      if (retries === MAX_RETRIES) {
-        console.error('Max retries reached, giving up on balance update');
-        wss.clients.forEach(client => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({ type: 'balance', xrpBalance: '0.00', usdBalance: '0.00' }));
-          }
-        });
-        break;
-      }
-      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
-    }
-  }
-}
-
-client.connect().then(() => {
-  isConnected = true;
-  console.log('Connected to XRPL WebSocket');
-  client.on('ledgerClosed', updateBalance);
-  client.on('disconnected', () => {
-    isConnected = false;
-    console.log('XRPL WebSocket disconnected, will retry on next update');
+wss.on('connection', (ws) => {
+  console.log('Client connected to WebSocket');
+  ws.on('message', (message) => {
+    console.log('Received WebSocket message:', message);
   });
-  updateBalance(); // Initial fetch
-}).catch(error => {
-  isConnected = false;
-  console.error('Initial XRPL connection failed:', error.message);
+  ws.on('close', () => {
+    console.log('Client disconnected from WebSocket');
+  });
+});
+
+initialize().then(() => {
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running at http://0.0.0.0:${port}`);
+  });
+}).catch((error) => {
+  console.error('Initialization error:', error);
 });
