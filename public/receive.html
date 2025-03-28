@@ -7,37 +7,79 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
-    body { background: linear-gradient(to bottom right, #1e3a8a, #60a5fa); min-height: 100vh; }
-    .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
-    .hover-scale:hover { transform: scale(1.05); transition: transform 0.2s; }
+    body { 
+      background: #ffffff;
+      min-height: 100vh;
+    }
+    .glass { 
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    .hover-scale:hover { 
+      transform: scale(1.05);
+      transition: transform 0.2s;
+    }
   </style>
 </head>
-<body class="flex items-center justify-center p-4">
-  <div class="w-full max-w-md glass rounded-xl shadow-lg p-6 text-white">
-    <h1 class="text-3xl font-bold text-center mb-4">Receive XRP</h1>
-    <div class="space-y-4">
-      <p class="text-center">Wallet Address:</p>
-      <p id="address" class="text-center font-mono break-all bg-gray-800 p-2 rounded-lg">raVYEbj4zSwpJSz8XyrkfPENj7DEvhsw34</p>
-      <div id="qrcode" class="flex justify-center mb-4"></div>
-      <button onclick="copyAddress()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold hover-scale">Copy Address</button>
-      <a href="/home" class="block w-full py-3 bg-gray-600 hover:bg-gray-700 rounded-lg font-semibold text-center hover-scale">Back to Home</a>
+<body class="flex flex-col min-h-screen bg-gray-50">
+  <!-- Navigation -->
+  <nav class="fixed top-0 w-full bg-white shadow-sm z-50">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="flex justify-between h-16">
+        <a href="/dashboard.html" class="flex items-center">
+          <img src="/images/Logo.jpg" alt="DualPay Logo" class="h-12 w-12">
+          <span class="ml-3 text-xl font-bold text-black">DualPay</span>
+        </a>
+        <div class="flex items-center space-x-4">
+          <a href="/dashboard.html" class="text-gray-600 hover:text-black px-3 py-2">Dashboard</a>
+        </div>
+      </div>
     </div>
-    <p id="message" class="text-green-300 text-center mt-4"></p>
+  </nav>
+
+  <div class="flex-1 flex items-center justify-center p-4 mt-16">
+    <div class="w-full max-w-md glass rounded-xl p-6 text-black">
+      <h1 class="text-3xl font-bold text-center mb-4">Receive XRP</h1>
+      <div class="space-y-6">
+        <div>
+          <p class="text-center text-gray-600 mb-2">Your Wallet Address</p>
+          <p id="address" class="text-center font-mono break-all bg-gray-100 p-4 rounded-lg border border-gray-200">raVYEbj4zSwpJSz8XyrkfPENj7DEvhsw34</p>
+        </div>
+        
+        <div id="qrcode" class="flex justify-center bg-white p-4 rounded-lg"></div>
+        
+        <div class="space-y-3">
+          <button onclick="copyAddress()" class="w-full py-3 bg-black hover:bg-gray-800 text-white rounded-lg font-semibold hover-scale transition-colors">
+            Copy Address
+          </button>
+          <a href="/dashboard.html" class="block w-full py-3 bg-gray-100 hover:bg-gray-200 text-black rounded-lg font-semibold text-center hover-scale transition-colors">
+            Back to Dashboard
+          </a>
+        </div>
+      </div>
+      <p id="message" class="text-green-600 text-center mt-4 hidden">Address copied to clipboard!</p>
+    </div>
   </div>
+
   <script>
-    const walletAddress = 'raVYEbj4zSwpJSz8XyrkfPENj7DEvhsw34';
     // Generate QR code
-    new QRCode(document.getElementById('qrcode'), {
-      text: walletAddress,
-      width: 128,
-      height: 128,
-      colorDark: '#000000',
-      colorLight: '#ffffff'
+    new QRCode(document.getElementById("qrcode"), {
+      text: document.getElementById("address").textContent,
+      width: 200,
+      height: 200,
+      colorDark : "#000000",
+      colorLight : "#ffffff",
+      correctLevel : QRCode.CorrectLevel.H
     });
+
     function copyAddress() {
-      navigator.clipboard.writeText(walletAddress).then(() => {
-        document.getElementById('message').textContent = 'Address copied to clipboard!';
-        setTimeout(() => document.getElementById('message').textContent = '', 2000);
+      const address = document.getElementById("address").textContent;
+      navigator.clipboard.writeText(address).then(() => {
+        const message = document.getElementById("message");
+        message.classList.remove("hidden");
+        setTimeout(() => message.classList.add("hidden"), 3000);
       });
     }
   </script>

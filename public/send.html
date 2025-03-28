@@ -1,144 +1,166 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DualPay - Send</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body { background: linear-gradient(to bottom right, #1e3a8a, #60a5fa); min-height: 100vh; }
-    .glass { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
-    .hover-scale:hover { transform: scale(1.05); transition: transform 0.2s ease-in-out; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DualPay - Send</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/js/qr-scanner.js"></script>
+    <style>
+        body { 
+            background: #ffffff;
+            min-height: 100vh;
+        }
+        .glass { 
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .hover-scale:hover { 
+            transform: scale(1.05);
+            transition: transform 0.2s ease-in-out;
+        }
+    </style>
 </head>
-<body class="flex items-center justify-center p-4">
-  <div class="w-full max-w-md glass rounded-xl shadow-lg p-6 text-white">
-    <h1 class="text-3xl font-bold text-center mb-4">Send XRP</h1>
-    <p class="text-center mb-6">Wallet Balance: <span id="balance" class="font-semibold">Loading...</span> XRP</p>
-    <div class="space-y-4">
-      <div>
-        <label for="amount1" class="block text-sm font-medium mb-1">Amount 1 (XRP)</label>
-        <input type="number" id="amount1" value="1" step="0.1" class="w-full p-2 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none">
-      </div>
-      <div>
-        <label for="recipient1" class="block text-sm font-medium mb-1">Recipient 1</label>
-        <input type="text" id="recipient1" value="rLqoPNccpG4zEJX99cfoXZbHJGWWB8Q2VP" class="w-full p-2 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none">
-      </div>
-      <div>
-        <label for="amount2" class="block text-sm font-medium mb-1">Amount 2 (XRP)</label>
-        <input type="number" id="amount2" value="0.5" step="0.1" class="w-full p-2 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none">
-      </div>
-      <div>
-        <label for="recipient2" class="block text-sm font-medium mb-1">Recipient 2</label>
-        <input type="text" id="recipient2" value="rD5KjjeN62Y9AqawhXnUGRhuWaumJQfmWe" class="w-full p-2 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none">
-      </div>
-      <div>
-        <label for="currency" class="block text-sm font-medium mb-1">Currency</label>
-        <select id="currency" class="w-full p-2 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none">
-          <option value="usd">USD</option>
-          <option value="eur">EUR</option>
-          <option value="gbp">GBP</option>
-        </select>
-      </div>
-    </div>
-    <button onclick="sendTransaction()" class="w-full mt-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold hover-scale">Send Transactions</button>
-<button onclick="tapToPay()" class="w-full mt-4 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold hover-scale">Tap to Pay</button>
-    <div id="result" class="mt-6 p-4 bg-gray-900 rounded-lg text-sm"></div>
-    <div id="twoFaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div class="glass p-6 rounded-lg text-white">
-        <h2 class="text-xl mb-4">Enter 2FA Code</h2>
-        <input type="text" id="twoFaCode" placeholder="SMS/Auth Code" class="w-full p-2 rounded-lg bg-gray-800 text-white border border-gray-700">
-        <button onclick="verify2Fa()" class="mt-4 w-full py-2 bg-blue-600 hover:bg-blue-700 rounded-lg">Verify</button>
-      </div>
-    </div>
-  </div>
-<script>
-  async function updateBalance() {
-    const balanceSpan = document.getElementById('balance');
-    try {
-      const response = await fetch('/balance');
-      const data = await response.json();
-      balanceSpan.textContent = data.success ? data.balance : 'Error';
-    } catch (error) {
-      balanceSpan.textContent = 'Error';
-    }
-  }
-  updateBalance();
-  setInterval(updateBalance, 30000);
+<body class="flex flex-col min-h-screen bg-gray-50">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-white shadow-sm z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <a href="/dashboard.html" class="flex items-center">
+                    <img src="/images/Logo.jpg" alt="DualPay Logo" class="h-12 w-12">
+                    <span class="ml-3 text-xl font-bold text-black">DualPay</span>
+                </a>
+                <div class="flex items-center space-x-4">
+                    <a href="/dashboard.html" class="text-gray-600 hover:text-black px-3 py-2">Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-  async function sendTransaction() {
-    const resultDiv = document.getElementById('result');
-    resultDiv.innerHTML = '<p class="text-yellow-300">Processing...</p>';
-    const transactions = [
-      { amount: document.getElementById('amount1').value, recipient: document.getElementById('recipient1').value },
-      { amount: document.getElementById('amount2').value, recipient: document.getElementById('recipient2').value }
-    ];
+    <div class="flex-1 flex items-center justify-center p-4 mt-16">
+        <div class="w-full max-w-md glass rounded-xl p-6 text-black">
+            <h1 class="text-3xl font-bold text-center mb-4">Send XRP</h1>
+            <p class="text-center mb-6 text-gray-600">Wallet Balance: <span id="balance" class="font-semibold">Loading...</span> XRP</p>
 
-    for (const tx of transactions) {
-      try {
-        // Check balance before sending
-        const balanceResponse = await fetch('/balance');
-        const balanceData = await balanceResponse.json();
-        if (!balanceData.success || parseFloat(balanceData.balance) < parseFloat(tx.amount) + 0.000012) {
-          resultDiv.innerHTML += `<p class="text-red-300">Tx to ${tx.recipient}: Insufficient funds (${balanceData.balance || 'unknown'} XRP left)</p>`;
-          continue;
+            <!-- QR Scanner Section -->
+            <div id="qr-scanner-container" class="hidden mb-4">
+                <div id="scanner-view" class="w-full rounded-lg overflow-hidden mb-2"></div>
+                <button onclick="toggleScanner(false)" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg mb-4">
+                    Close Scanner
+                </button>
+            </div>
+
+            <!-- Payment Form -->
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1 mr-4">
+                        <label for="recipient" class="block text-sm font-medium text-gray-700 mb-1">Recipient Address</label>
+                        <input type="text" id="recipient" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black" placeholder="Enter XRP address">
+                    </div>
+                    <button onclick="toggleScanner(true)" class="bg-gray-100 hover:bg-gray-200 p-2 rounded-lg">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v-4m6 0h-2m2 0v4m-6-4h-2m2 0v4m-6 4h-2m2 0v4m-6-4h-2m2 0v4"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div>
+                    <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">Amount (XRP)</label>
+                    <input type="number" id="amount" min="0" step="0.000001" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black" placeholder="0.00">
+                </div>
+
+                <div>
+                    <label for="memo" class="block text-sm font-medium text-gray-700 mb-1">Memo (Optional)</label>
+                    <input type="text" id="memo" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black" placeholder="Add a note">
+                </div>
+
+                <button onclick="sendTransaction()" class="w-full bg-black hover:bg-gray-800 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+                    Send Payment
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let qrScanner = null;
+
+        function toggleScanner(show) {
+            const scannerContainer = document.getElementById('qr-scanner-container');
+            
+            if (show) {
+                scannerContainer.classList.remove('hidden');
+                if (!qrScanner) {
+                    qrScanner = new QRScanner();
+                    qrScanner.init('scanner-view', handleQRScan);
+                }
+            } else {
+                scannerContainer.classList.add('hidden');
+                if (qrScanner) {
+                    qrScanner.stop();
+                    qrScanner = null;
+                }
+            }
         }
 
-        // Check for 2FA if amount > 50 XRP
-        if (parseFloat(tx.amount) > 50) {
-          document.getElementById('twoFaModal').classList.remove('hidden');
-          window.currentTx = tx;
-          return; // Wait for 2FA verification
+        function handleQRScan(data) {
+            if (data.address && data.amount) {
+                document.getElementById('recipient').value = data.address;
+                document.getElementById('amount').value = data.amount;
+                if (data.memo) {
+                    document.getElementById('memo').value = data.memo;
+                }
+                toggleScanner(false);
+            }
         }
 
-        await sendTx(tx); // Send if balance is sufficient and no 2FA needed
-      } catch (error) {
-        resultDiv.innerHTML += `<p class="text-red-300">Tx to ${tx.recipient}: Error: ${error.message}</p>`;
-      }
-    }
-    updateBalance(); // Update balance after all transactions
-  }
+        async function updateBalance() {
+            try {
+                const response = await fetch('/api/balance');
+                const data = await response.json();
+                document.getElementById('balance').textContent = data.balance;
+            } catch (error) {
+                console.error('Error fetching balance:', error);
+            }
+        }
 
-  async function verify2Fa() {
-    const code = document.getElementById('twoFaCode').value;
-    if (code === '123456') { // Mock 2FA code
-      document.getElementById('twoFaModal').classList.add('hidden');
-      try {
-        await sendTx(window.currentTx);
-        sendTransaction(); // Resume sending remaining transactions
-      } catch (error) {
-        document.getElementById('result').innerHTML += `<p class="text-red-300">Tx to ${window.currentTx.recipient}: Error: ${error.message}</p>`;
-      }
-    } else {
-      document.getElementById('result').innerHTML = '<p class="text-red-300">Invalid 2FA code</p>';
-    }
-  }
+        async function sendTransaction() {
+            const recipient = document.getElementById('recipient').value;
+            const amount = document.getElementById('amount').value;
+            const memo = document.getElementById('memo').value;
 
-  async function sendTx(tx) {
-    const response = await fetch('/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...tx, currency: document.getElementById('currency').value }),
-    });
-    const data = await response.json();
-    const resultDiv = document.getElementById('result');
-    if (data.success) {
-      resultDiv.innerHTML += `<p class="text-green-300">Tx to ${tx.recipient}: Success! Hash: ${data.txHash} (${data.fiatAmount} ${data.currency})</p>`;
-    } else {
-      resultDiv.innerHTML += `<p class="text-red-300">Tx to ${tx.recipient}: Error: ${data.error}</p>`;
-    }
-  }
+            if (!recipient || !amount) {
+                alert('Please fill in all required fields');
+                return;
+            }
 
-async function tapToPay() {
-  console.log('Tap to Pay clicked');
-  const resultDiv = document.getElementById('result');
-  resultDiv.innerHTML = '<p class="text-yellow-300">Simulating NFC tap...</p>';
-  console.log('Simulating NFC tap displayed');
-  const tx = { amount: document.getElementById('amount1').value, recipient: 'rLqoPNccpG4zEJX99cfoXZbHJGWWB8Q2VP' };
-  console.log('Transaction prepared:', tx);
-  await sendTx(tx);
-  updateBalance();
-}
-</script>
+            try {
+                const response = await fetch('/api/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ recipient, amount, memo })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Transaction successful!');
+                    updateBalance();
+                } else {
+                    alert(data.error || 'Transaction failed');
+                }
+            } catch (error) {
+                console.error('Error sending transaction:', error);
+                alert('Transaction failed');
+            }
+        }
+
+        // Initialize
+        updateBalance();
+        setInterval(updateBalance, 30000);
+    </script>
 </body>
 </html>

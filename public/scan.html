@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DualPay - QR Scanner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body { 
+            background: #ffffff;
+            min-height: 100vh;
+        }
+        .glass { 
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .hover-scale:hover {
+            transform: scale(1.05);
+            transition: transform 0.2s;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen bg-gray-50">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-white shadow-sm z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <a href="/dashboard.html" class="flex items-center">
+                    <img src="/images/Logo.jpg" alt="DualPay Logo" class="h-12 w-12">
+                    <span class="ml-3 text-xl font-bold text-black">DualPay</span>
+                </a>
+                <div class="flex items-center space-x-4">
+                    <a href="/dashboard.html" class="text-gray-600 hover:text-black px-3 py-2">Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex-1 flex items-center justify-center p-4 mt-16">
+        <div class="w-full max-w-md glass rounded-xl p-6 text-black">
+            <h1 class="text-3xl font-bold text-center mb-6">Scan QR Code</h1>
+            <div id="reader" class="w-full mb-6 rounded-lg overflow-hidden bg-white"></div>
+            <div id="result" class="text-center mb-6 text-gray-600"></div>
+            <button onclick="window.location.href='/send.html'" class="w-full bg-black hover:bg-gray-800 text-white font-bold py-3 px-4 rounded-lg transition-colors hover-scale">
+                Back to Send
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function onScanSuccess(decodedText, decodedResult) {
+            try {
+                const data = JSON.parse(decodedText);
+                if (data.address && data.amount) {
+                    // Store the scanned data in sessionStorage
+                    sessionStorage.setItem('scannedPayment', JSON.stringify(data));
+                    // Redirect to send page
+                    window.location.href = '/send.html';
+                } else {
+                    document.getElementById('result').textContent = 'Invalid QR code format';
+                }
+            } catch (error) {
+                document.getElementById('result').textContent = 'Invalid QR code format';
+            }
+        }
+
+        function onScanFailure(error) {
+            // Handle scan failure, usually better to ignore it.
+        }
+
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader",
+            { 
+                fps: 10,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1,
+                formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ]
+            },
+            false
+        );
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+    </script>
+</body>
+</html>
