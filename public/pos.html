@@ -1,62 +1,445 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DualPay - Point of Sale</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      margin: 0;
-      background: #ffffff;
-      min-height: 100vh;
-    }
-    .hover-scale:hover {
-      transform: scale(1.05);
-      transition: transform 0.2s;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DualPay - Point of Sale</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #101010;
+            color: #E0E0E0;
+        }
+        .sidebar {
+            background-color: #181818;
+        }
+        .card {
+            background-color: #181818;
+        }
+        .btn-primary {
+            background-color: #00C805;
+            color: #101010;
+        }
+        .btn-secondary {
+            background-color: #282828;
+            color: #E0E0E0;
+        }
+        .nav-link.active {
+            background-color: #282828;
+            color: white;
+        }
+        .calculator-btn {
+            background-color: #282828;
+            color: #E0E0E0;
+            border: 1px solid #404040;
+        }
+        .calculator-btn:hover {
+            background-color: #404040;
+        }
+        .calculator-btn.operator {
+            background-color: #00C805;
+            color: #101010;
+        }
+        .qr-container {
+            background-color: white;
+            border-radius: 12px;
+            padding: 16px;
+        }
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #00C805;
+        }
+    </style>
 </head>
-<body class="flex flex-col min-h-screen bg-gray-50">
-  <!-- Navigation -->
-  <nav class="fixed top-0 w-full bg-white shadow-sm z-50">
-    <div class="max-w-7xl mx-auto px-4">
-      <div class="flex justify-between h-16">
-        <a href="/dashboard.html" class="flex items-center">
-          <img src="/images/Logo.jpg" alt="DualPay Logo" class="h-12 w-12">
-          <span class="ml-3 text-xl font-bold text-black">DualPay</span>
-        </a>
-        <div class="flex items-center space-x-4">
-          <a href="/dashboard.html" class="text-gray-600 hover:text-black px-3 py-2">Dashboard</a>
+<body class="flex h-screen">
+
+    <!-- Sidebar -->
+    <aside class="sidebar w-64 flex-shrink-0 hidden md:flex flex-col">
+        <div class="p-6 flex-grow">
+            <!-- User Balance Card -->
+            <div class="card p-4 rounded-lg mb-10 text-center">
+                <img src="/images/Logo.jpg" alt="User Avatar" class="h-16 w-16 rounded-full mx-auto mb-4">
+                <h3 class="font-semibold text-lg" id="username">demo</h3>
+                <p class="text-2xl font-bold" id="sidebarBalance">$70,236</p>
+                <p class="text-sm text-gray-400">Total Balance</p>
+            </div>
+
+            <nav>
+                <ul>
+                    <li class="mb-2"><a href="/dashboard.html" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>Dashboard</a></li>
+                    <li class="mb-2"><a href="/send.html" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>Send</a></li>
+                    <li class="mb-2"><a href="/receive.html" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>Receive</a></li>
+                    <li class="mb-2"><a href="/swap.html" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>Swap</a></li>
+                    <li class="mb-2"><a href="/pos.html" class="nav-link active flex items-center p-3 rounded-lg"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5h.01"></path></svg>Point of Sale</a></li>
+                    <li class="mb-2"><a href="/kyc.html" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 012-2h4a2 2 0 012 2v1m-4 0h4"></path></svg>KYC</a></li>
+                </ul>
+            </nav>
         </div>
-      </div>
-    </div>
-  </nav>
-
-  <div class="flex-1 flex items-center justify-center p-4 mt-16">
-    <div class="w-full max-w-md bg-white rounded-xl shadow-sm p-6">
-      <div class="flex justify-between items-center mb-6">
-        <button onclick="window.location.href='/dashboard.html'" class="text-gray-600 hover:text-black">
-          Cancel
-        </button>
-        <h1 class="text-2xl font-bold text-center text-black">Point of Sale</h1>
-        <div class="w-16"></div><!-- Spacer for alignment -->
-      </div>
-
-      <div class="space-y-6">
-        <div class="text-center text-gray-600">
-          <p class="mb-2">Use the scanner to process payments quickly and securely.</p>
-          <p>Access the scanner from the home screen for the best experience.</p>
+        <div class="p-6">
+            <a href="#" id="logoutButton" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>Logout</a>
         </div>
+    </aside>
 
-        <button onclick="window.location.href='/home.html'" class="w-full py-3 bg-black hover:bg-gray-800 text-white rounded-lg font-semibold hover-scale transition-colors">
-          Open Scanner
-        </button>
+    <!-- Main Content -->
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+        <div class="max-w-6xl mx-auto">
+            <!-- Header -->
+            <header class="mb-6">
+                <h1 class="text-2xl font-bold">Point of Sale</h1>
+                <p class="text-gray-400">Process crypto payments for your business</p>
+            </header>
 
-        <div id="status" class="text-center text-gray-500 mt-4"></div>
-      </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Payment Calculator -->
+                <div class="card p-6 rounded-lg">
+                    <h2 class="text-lg font-semibold mb-4">Payment Calculator</h2>
+                    
+                    <!-- Display -->
+                    <div class="mb-4">
+                        <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 text-right">
+                            <div class="text-3xl font-bold" id="display">$0.00</div>
+                            <div class="text-sm text-gray-400" id="cryptoDisplay">0 BTC</div>
+                        </div>
+                    </div>
+
+                    <!-- Currency Selection -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Payment Currency</label>
+                        <div class="grid grid-cols-4 gap-2">
+                            <button class="currency-btn active calculator-btn p-2 rounded-lg text-sm font-semibold" data-currency="BTC">₿ BTC</button>
+                            <button class="currency-btn calculator-btn p-2 rounded-lg text-sm font-semibold" data-currency="ETH">Ξ ETH</button>
+                            <button class="currency-btn calculator-btn p-2 rounded-lg text-sm font-semibold" data-currency="XRP">◊ XRP</button>
+                            <button class="currency-btn calculator-btn p-2 rounded-lg text-sm font-semibold" data-currency="SOL">◎ SOL</button>
+                        </div>
+                    </div>
+
+                    <!-- Calculator Keypad -->
+                    <div class="grid grid-cols-4 gap-2 mb-4">
+                        <button class="calculator-btn p-4 rounded-lg font-semibold" onclick="clearDisplay()">C</button>
+                        <button class="calculator-btn p-4 rounded-lg font-semibold" onclick="deleteLast()">⌫</button>
+                        <button class="calculator-btn p-4 rounded-lg font-semibold" onclick="addToDisplay('/')" disabled>÷</button>
+                        <button class="calculator-btn p-4 rounded-lg font-semibold" onclick="addToDisplay('*')" disabled>×</button>
+                        
+                        <button class="calculator-btn p-4 rounded-lg font-semibold" onclick="addToDisplay('7')">7</button>
+                        <button class="calculator-btn p-4 rounded-lg font-semibold" onclick="addToDisplay('8')">8</button>
+                        <button class="calculator-btn p-4 rounded-lg font-semibold" onclick="addToDisplay('9')">9</button>
+                        <button class="calculator-btn p-4 rounded-lg font-semibold" onclick="addToDisplay('-')" disabled>−</button>
+                        
+                        <button class="calculator-btn p-4 rounded-lg font-semibold" onclick="addToDisplay('4')">4</button>
+                        <button class="calculator-btn p-4 rounded-lg font-semibold" onclick="addToDisplay('5')">5</button>
+                        <button class="calculator-btn p-4 rounded-lg font-semibold" onclick="addToDisplay('6')">6</button>
+                        <button class="calculator-btn p-4 rounded-lg font-semibold" onclick="addToDisplay('+')" disabled>+</button>
+                        
+                        <button class="calculator-btn p-4 rounded-lg font-semibold" onclick="addToDisplay('1')">1</button>
+                        <button class="calculator-btn p-4 rounded-lg font-semibold" onclick="addToDisplay('2')">2</button>
+                        <button class="calculator-btn p-4 rounded-lg font-semibold" onclick="addToDisplay('3')">3</button>
+                        <button class="calculator-btn operator p-4 rounded-lg font-semibold row-span-2" onclick="generatePayment()">PAY</button>
+                        
+                        <button class="calculator-btn p-4 rounded-lg font-semibold col-span-2" onclick="addToDisplay('0')">0</button>
+                        <button class="calculator-btn p-4 rounded-lg font-semibold" onclick="addToDisplay('.')">.</button>
+                    </div>
+
+                    <!-- Quick Amount Buttons -->
+                    <div class="grid grid-cols-3 gap-2">
+                        <button class="btn-secondary p-2 rounded-lg text-sm font-semibold" onclick="setAmount(10)">$10</button>
+                        <button class="btn-secondary p-2 rounded-lg text-sm font-semibold" onclick="setAmount(25)">$25</button>
+                        <button class="btn-secondary p-2 rounded-lg text-sm font-semibold" onclick="setAmount(50)">$50</button>
+                    </div>
+                </div>
+
+                <!-- Payment Request -->
+                <div class="card p-6 rounded-lg">
+                    <h2 class="text-lg font-semibold mb-4">Payment Request</h2>
+                    
+                    <div id="paymentRequest" class="hidden">
+                        <!-- QR Code -->
+                        <div class="text-center mb-6">
+                            <div class="inline-block qr-container">
+                                <div id="qrcode"></div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Details -->
+                        <div class="space-y-3 mb-6">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Amount (USD)</span>
+                                <span class="font-semibold" id="paymentAmountUSD">$0.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Amount (Crypto)</span>
+                                <span class="font-semibold" id="paymentAmountCrypto">0 BTC</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Currency</span>
+                                <span class="font-semibold" id="paymentCurrency">Bitcoin</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">Payment Address</span>
+                                <span class="font-mono text-xs" id="paymentAddress">1A1zP1eP...</span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="space-y-3">
+                            <button onclick="copyPaymentInfo()" class="btn-primary w-full px-4 py-3 rounded-lg font-semibold hover:bg-green-600 transition-colors">
+                                Copy Payment Info
+                            </button>
+                            <button onclick="sharePayment()" class="btn-secondary w-full px-4 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors">
+                                Share QR Code
+                            </button>
+                            <button onclick="newPayment()" class="btn-secondary w-full px-4 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors">
+                                New Payment
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="noPayment" class="text-center text-gray-400 py-12">
+                        <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v-4m6 0h-2m2 0v4m-6-4h-2m2 0v4m-6 4h-2m2 0v4m-6-4h-2m2 0v4"></path>
+                        </svg>
+                        <p>Enter an amount and click PAY to generate a payment request</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="card p-6 rounded-lg mt-6">
+                <h2 class="text-lg font-semibold mb-4">Recent POS Transactions</h2>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center mr-3">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Payment Received</p>
+                                <p class="text-xs text-gray-400">Customer purchase</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-green-500">$45.99</p>
+                            <p class="text-xs text-gray-400">0.00109 BTC</p>
+                            <p class="text-xs text-gray-500">2 hours ago</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center mr-3">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Payment Received</p>
+                                <p class="text-xs text-gray-400">Customer purchase</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-green-500">$12.50</p>
+                            <p class="text-xs text-gray-400">20.83 XRP</p>
+                            <p class="text-xs text-gray-500">4 hours ago</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center mr-3">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Payment Received</p>
+                                <p class="text-xs text-gray-400">Customer purchase</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-green-500">$89.99</p>
+                            <p class="text-xs text-gray-400">0.0368 ETH</p>
+                            <p class="text-xs text-gray-500">1 day ago</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Mobile Navigation -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-gray-800 flex justify-around p-2">
+        <a href="/dashboard.html" class="hover:text-green-500 p-2 flex flex-col items-center text-xs"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>Dashboard</a>
+        <a href="/send.html" class="hover:text-green-500 p-2 flex flex-col items-center text-xs"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>Send</a>
+        <a href="/receive.html" class="hover:text-green-500 p-2 flex flex-col items-center text-xs"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>Receive</a>
+        <a href="/swap.html" class="hover:text-green-500 p-2 flex flex-col items-center text-xs"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>Swap</a>
+        <a href="/pos.html" class="text-green-500 p-2 flex flex-col items-center text-xs"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5h.01"></path></svg>POS</a>
+    </nav>
+
+    <!-- Success Message -->
+    <div id="successMessage" class="fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg hidden">
+        Payment info copied to clipboard!
     </div>
-  </div>
+
+    <script>
+        let currentAmount = '';
+        let selectedCurrency = 'BTC';
+        
+        // Crypto prices (same as other pages)
+        const cryptoPrices = {
+            BTC: 42000,
+            ETH: 2440,
+            XRP: 0.6,
+            SOL: 168
+        };
+
+        // Wallet addresses
+        const walletAddresses = {
+            BTC: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
+            ETH: '0x742d35Cc6634C0532925a3b8D4C7C16E52d7C4B7',
+            XRP: 'rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH',
+            SOL: '11111111111111111111111111111112'
+        };
+
+        // Currency selection
+        document.querySelectorAll('.currency-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.currency-btn').forEach(b => b.classList.remove('active', 'bg-green-500'));
+                this.classList.add('active', 'bg-green-500');
+                selectedCurrency = this.getAttribute('data-currency');
+                updateDisplay();
+            });
+        });
+
+        function addToDisplay(value) {
+            if (value === '.' && currentAmount.includes('.')) return;
+            if (currentAmount === '' && value === '.') currentAmount = '0';
+            
+            currentAmount += value;
+            updateDisplay();
+        }
+
+        function clearDisplay() {
+            currentAmount = '';
+            updateDisplay();
+        }
+
+        function deleteLast() {
+            currentAmount = currentAmount.slice(0, -1);
+            updateDisplay();
+        }
+
+        function setAmount(usdAmount) {
+            currentAmount = usdAmount.toString();
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const amount = parseFloat(currentAmount) || 0;
+            document.getElementById('display').textContent = `$${amount.toFixed(2)}`;
+            
+            if (amount > 0) {
+                const cryptoAmount = (amount / cryptoPrices[selectedCurrency]).toFixed(6);
+                document.getElementById('cryptoDisplay').textContent = `${cryptoAmount} ${selectedCurrency}`;
+            } else {
+                document.getElementById('cryptoDisplay').textContent = `0 ${selectedCurrency}`;
+            }
+        }
+
+        function generatePayment() {
+            const amount = parseFloat(currentAmount) || 0;
+            if (amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+
+            const cryptoAmount = (amount / cryptoPrices[selectedCurrency]).toFixed(6);
+            const address = walletAddresses[selectedCurrency];
+            
+            // Update payment display
+            document.getElementById('paymentAmountUSD').textContent = `$${amount.toFixed(2)}`;
+            document.getElementById('paymentAmountCrypto').textContent = `${cryptoAmount} ${selectedCurrency}`;
+            document.getElementById('paymentCurrency').textContent = getCurrencyName(selectedCurrency);
+            document.getElementById('paymentAddress').textContent = address.substring(0, 10) + '...';
+            
+            // Generate QR code
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = '';
+            
+            const paymentData = `${selectedCurrency}:${address}?amount=${cryptoAmount}`;
+            new QRCode(qrContainer, {
+                text: paymentData,
+                width: 200,
+                height: 200,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            // Show payment request
+            document.getElementById('noPayment').classList.add('hidden');
+            document.getElementById('paymentRequest').classList.remove('hidden');
+        }
+
+        function getCurrencyName(currency) {
+            const names = {
+                BTC: 'Bitcoin',
+                ETH: 'Ethereum',
+                XRP: 'XRP',
+                SOL: 'Solana'
+            };
+            return names[currency];
+        }
+
+        function copyPaymentInfo() {
+            const amount = document.getElementById('paymentAmountCrypto').textContent;
+            const address = walletAddresses[selectedCurrency];
+            const info = `Payment Request\nAmount: ${amount}\nAddress: ${address}`;
+            
+            navigator.clipboard.writeText(info).then(() => {
+                showSuccessMessage('Payment info copied to clipboard!');
+            });
+        }
+
+        function sharePayment() {
+            if (navigator.share) {
+                const amount = document.getElementById('paymentAmountCrypto').textContent;
+                const currency = getCurrencyName(selectedCurrency);
+                navigator.share({
+                    title: `${currency} Payment Request`,
+                    text: `Pay ${amount} to: ${walletAddresses[selectedCurrency]}`
+                });
+            } else {
+                copyPaymentInfo();
+            }
+        }
+
+        function newPayment() {
+            currentAmount = '';
+            updateDisplay();
+            document.getElementById('paymentRequest').classList.add('hidden');
+            document.getElementById('noPayment').classList.remove('hidden');
+        }
+
+        function showSuccessMessage(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.classList.remove('hidden');
+            setTimeout(() => successDiv.classList.add('hidden'), 3000);
+        }
+
+        // Logout functionality
+        document.getElementById('logoutButton').addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('authToken');
+            window.location.href = '/login.html';
+        });
+
+        // Initialize
+        updateDisplay();
+    </script>
 </body>
 </html>

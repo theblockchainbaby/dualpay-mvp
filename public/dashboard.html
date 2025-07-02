@@ -2,428 +2,349 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DualPay - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { 
+        body {
             font-family: 'Inter', sans-serif;
-            background: #ffffff;
-            overscroll-behavior-y: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .glass { 
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 0, 0, 0.1);
+            background-color: #101010;
+            color: #E0E0E0;
         }
         .sidebar {
-            background: linear-gradient(180deg, #000000 0%, #1a1a1a 100%);
+            background-color: #181818;
         }
-        .notification-badge {
-            animation: pulse 2s infinite;
+        .card {
+            background-color: #181818;
         }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+        .btn-primary {
+            background-color: #00C805;
+            color: #101010;
         }
-        
-        /* Mobile-specific styles */
-        .mobile-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
+        .btn-secondary {
+            background-color: #282828;
+            color: #E0E0E0;
+        }
+        .asset-icon {
+            width: 40px;
+            height: 40px;
+        }
+        .nav-link.active {
+            background-color: #282828;
+            color: white;
+        }
+        .hamburger-menu {
+            position: relative;
+        }
+        .menu-dropdown {
+            position: absolute;
+            top: 100%;
             right: 0;
-            background: white;
-            box-shadow: 0 -1px 10px rgba(0,0,0,0.1);
-            z-index: 50;
+            width: 320px;
+            max-height: 500px;
+            overflow-y: auto;
+            background-color: #181818;
+            border: 1px solid #404040;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            transform: translateY(-10px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
         }
-        
-        .mobile-nav-item {
+        .menu-dropdown.active {
+            transform: translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+        .menu-item {
+            padding: 16px;
+            border-bottom: 1px solid #282828;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .menu-item:hover {
+            background-color: #282828;
+        }
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+        .menu-item-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #00C805;
+            border-radius: 8px;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 0.5rem;
-            font-size: 0.75rem;
+            flex-shrink: 0;
         }
-        
-        .mobile-nav-item svg {
-            width: 1.5rem;
-            height: 1.5rem;
-            margin-bottom: 0.25rem;
-        }
-        
-        .mobile-nav-item.active {
-            color: #2563eb;
-        }
-        
-        /* Pull to refresh animation */
-        .pull-to-refresh {
-            height: 60px;
-            margin-top: -60px;
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            transition: height 0.3s ease;
-        }
-        
-        .pull-to-refresh.active {
-            height: 100px;
-        }
-        
-        /* Touch-friendly buttons */
-        .touch-target {
-            min-height: 44px;
-            min-width: 44px;
-        }
-        
-        /* Swipeable cards */
-        .swipeable-card {
-            touch-action: pan-y;
-            position: relative;
-            transition: transform 0.3s ease;
-        }
-        
-        .swipeable-card .actions {
-            position: absolute;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            display: flex;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        }
-        
-        /* Mobile-optimized scrolling */
-        .smooth-scroll {
-            -webkit-overflow-scrolling: touch;
-            scroll-behavior: smooth;
-            scrollbar-width: none;
-        }
-        
-        .smooth-scroll::-webkit-scrollbar {
-            display: none;
-        }
-        
-        /* Bottom sheet */
-        .bottom-sheet {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            border-radius: 20px 20px 0 0;
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
-            z-index: 40;
-        }
-        
-        .bottom-sheet.active {
-            transform: translateY(0);
-        }
-        
-        .bottom-sheet-handle {
-            width: 40px;
-            height: 4px;
-            background: #CBD5E0;
-            border-radius: 2px;
-            margin: 8px auto;
-        }
-        
-        /* Mobile grid adjustments */
-        @media (max-width: 640px) {
-            .mobile-grid {
-                display: grid;
-                grid-template-columns: 100%;
-                gap: 1rem;
-                padding: 1rem;
-                padding-bottom: 80px; /* Space for bottom nav */
+        @media (max-width: 768px) {
+            .menu-dropdown {
+                width: 280px;
+                right: -20px;
             }
-            
-            .mobile-card {
-                margin: 0;
-                border-radius: 16px;
-            }
-        }
-        
-        /* Loading skeleton for mobile */
-        .skeleton {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-        }
-        
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
         }
     </style>
 </head>
-<body class="h-screen flex bg-white text-black">
-    <!-- Mobile Navigation -->
-    <nav class="mobile-nav lg:hidden fixed bottom-0 w-full bg-white border-t border-gray-200 grid grid-cols-5 text-sm z-50">
-        <button class="mobile-nav-item active p-3 text-center" onclick="switchTab('dashboard')">
-            <svg class="w-6 h-6 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-            </svg>
-            <span>Home</span>
-        </button>
-        <button class="mobile-nav-item" onclick="switchTab('send')">
-            <svg class="w-6 h-6 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-            </svg>
-            <span>Send</span>
-        </button>
-        <button class="mobile-nav-item" onclick="switchTab('scan')">
-            <div class="bg-blue-600 rounded-full p-3 -mt-6 touch-target">
-                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-            </div>
-        </button>
-        <button class="mobile-nav-item" onclick="switchTab('receive')">
-            <svg class="w-6 h-6 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
-            <span>Receive</span>
-        </button>
-        <button class="mobile-nav-item" onclick="toggleMobileMenu()">
-            <svg class="w-6 h-6 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
-            </svg>
-            <span>Menu</span>
-        </button>
-    </nav>
-
-    <!-- Pull to refresh indicator -->
-    <div class="pull-to-refresh hidden lg:hidden">
-        <svg class="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        <span class="ml-2 text-sm text-gray-600">Pull to refresh</span>
-    </div>
+<body class="flex h-screen">
 
     <!-- Sidebar -->
-    <nav class="sidebar w-64 h-full text-white p-4 hidden lg:block">
-        <div class="mb-8">
-            <div class="flex items-center mb-4">
-                <img src="/images/Logo.jpg" alt="DualPay Logo" class="h-12 w-12 mr-2">
-                <h1 class="text-2xl font-bold">DualPay</h1>
-            </div>
-            <p class="text-gray-300 text-sm">Welcome back, <span id="username">User</span></p>
-        </div>
-
-        <div class="space-y-2">
-            <a href="#" class="flex items-center space-x-3 p-3 rounded-lg bg-white/10 text-white">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                </svg>
-                <span>Dashboard</span>
-            </a>
-
-            <a href="/send.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 text-white">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                </svg>
-                <span>Send</span>
-            </a>
-
-            <a href="/receive.html" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 text-white">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"></path>
-                </svg>
-                <span>Receive</span>
-            </a>
-
-            <div class="relative">
-                <a href="#" onclick="toggleNotifications()" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 text-white">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                    </svg>
-                    <span>Notifications</span>
-                    <span id="notificationBadge" class="notification-badge hidden absolute top-2 right-2 bg-red-500 text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
-                </a>
+    <aside class="sidebar w-64 flex-shrink-0 hidden md:flex flex-col">
+        <div class="p-6 flex-grow">
+            <!-- User Balance Card -->
+            <div class="card p-4 rounded-lg mb-10 text-center">
+                <img src="/images/Logo.jpg" alt="User Avatar" class="h-16 w-16 rounded-full mx-auto mb-4">
+                <h3 class="font-semibold text-lg" id="username">User</h3>
+                <p class="text-2xl font-bold" id="sidebarBalance">$0.00</p>
+                <p class="text-sm text-gray-400">Total Balance</p>
             </div>
 
-            <a href="#" onclick="showSettings()" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/10 text-white">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c-.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                </svg>
-                <span>Settings</span>
-            </a>
+            <nav>
+                <ul>
+                    <li class="mb-2"><a href="/dashboard.html" class="nav-link active flex items-center p-3 rounded-lg"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>Dashboard</a></li>
+                    <li class="mb-2"><a href="/send.html" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>Send</a></li>
+                    <li class="mb-2"><a href="/receive.html" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>Receive</a></li>
+                    <li class="mb-2"><a href="/swap.html" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>Swap</a></li>
+                    <li class="mb-2"><a href="/pos.html" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5h.01"></path></svg>Point of Sale</a></li>
+                    <li class="mb-2"><a href="/kyc.html" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 012-2h4a2 2 0 012 2v1m-4 0h4"></path></svg>KYC</a></li>
+                </ul>
+            </nav>
         </div>
-
-        <div class="absolute bottom-4 left-4 right-4">
-            <button onclick="logout()" class="w-full flex items-center justify-center space-x-2 p-3 rounded-lg hover:bg-red-600 transition duration-200">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                </svg>
-                <span>Logout</span>
-            </button>
+        <div class="p-6">
+            <a href="#" id="logoutButton" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>Logout</a>
         </div>
-    </nav>
+    </aside>
 
-    <main class="flex-1 p-6 overflow-y-auto bg-gray-50">
-        <!-- Mobile Header -->
-        <div class="lg:hidden flex items-center justify-between mb-6">
-            <div class="flex items-center">
-                <img src="/images/Logo.jpg" alt="DualPay Logo" class="h-12 w-12 mr-2">
-                <h1 class="text-2xl font-bold">DualPay</h1>
-            </div>
-            <button onclick="toggleMobileMenu()" class="p-2 rounded-lg bg-gray-100">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
-                </svg>
-            </button>
-        </div>
-
-        <!-- Balance Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-            <div class="glass rounded-xl p-6">
-                <h3 class="text-gray-500 mb-2">XRP Balance</h3>
-                <div class="flex items-baseline">
-                    <span class="text-3xl font-bold" id="xrpBalance">0.00</span>
-                    <span class="ml-2 text-gray-500">XRP</span>
+    <!-- Main Content -->
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <header class="mb-6 flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold">Dashboard</h1>
+                    <p class="text-gray-400">Welcome back, <span id="username-header">User</span>!</p>
                 </div>
-                <div class="mt-4 flex items-center text-sm">
-                    <span class="text-green-500 flex items-center">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                
+                <!-- Hamburger Menu -->
+                <div class="hamburger-menu">
+                    <button id="hamburgerBtn" class="p-3 rounded-lg hover:bg-gray-700 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                         </svg>
-                        <span id="xrpChange">+0.00%</span>
-                    </span>
-                    <span class="ml-2 text-gray-500">24h change</span>
-                </div>
-            </div>
-
-            <div class="glass rounded-xl p-6">
-                <h3 class="text-gray-500 mb-2">Fiat Balance</h3>
-                <div class="flex items-baseline">
-                    <span class="text-3xl font-bold" id="fiatBalance">$0.00</span>
-                    <span class="ml-2 text-gray-500" id="fiatCurrency">USD</span>
-                </div>
-                <div class="mt-4">
-                    <select id="fiatCurrencySelect" class="bg-gray-100 rounded-lg px-3 py-1 text-sm" onchange="updateFiatBalance()">
-                        <option value="USD">USD</option>
-                        <option value="EUR">EUR</option>
-                        <option value="JPY">JPY</option>
-                        <option value="AED">AED</option>
-                        <option value="SGD">SGD</option>
-                        <option value="CHF">CHF</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="glass rounded-xl p-6">
-                <h3 class="text-gray-500 mb-2">Quick Actions</h3>
-                <div class="grid grid-cols-2 gap-4">
-                    <button onclick="window.location.href='/send.html'" class="p-3 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition duration-200">
-                        Send
                     </button>
-                    <button onclick="window.location.href='/receive.html'" class="p-3 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition duration-200">
-                        Receive
-                    </button>
+                    
+                    <!-- Dropdown Menu -->
+                    <div id="menuDropdown" class="menu-dropdown">
+                        <div class="p-4 border-b border-gray-700">
+                            <h3 class="font-semibold text-lg">DualPay Features</h3>
+                            <p class="text-sm text-gray-400">Explore what makes DualPay unique</p>
+                        </div>
+                        
+                        <!-- Menu Items -->
+                        <div class="menu-item">
+                            <div class="flex items-start space-x-3">
+                                <div class="menu-item-icon">
+                                    <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-white mb-1">Optimized for Real-World Merchants</h4>
+                                    <p class="text-sm text-gray-400">DualPay seamlessly integrates with existing NFC terminals, allowing businesses to accept crypto payments without changing their current hardware or systems.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="menu-item">
+                            <div class="flex items-start space-x-3">
+                                <div class="menu-item-icon">
+                                    <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-white mb-1">Stablecoin-Powered Payments</h4>
+                                    <p class="text-sm text-gray-400">No volatility. No surprises. What customers spend is exactly what merchants receive—ensuring consistent, real-world spending power.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="menu-item">
+                            <div class="flex items-start space-x-3">
+                                <div class="menu-item-icon">
+                                    <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-white mb-1">Transparent Blockchain Security</h4>
+                                    <p class="text-sm text-gray-400">Every transaction is verified on-chain. Your data stays private and protected—offering the security of blockchain with the familiarity of cash.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="menu-item">
+                            <div class="flex items-start space-x-3">
+                                <div class="menu-item-icon">
+                                    <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 3v10a2 2 0 002 2h6a2 2 0 002-2V7M7 7h10M10 11v6M14 11v6"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-white mb-1">One-Tap Checkout Experience</h4>
+                                    <p class="text-sm text-gray-400">Pay with a single tap—no QR codes, no wallet addresses. Just fast, intuitive, and secure payments powered by blockchain technology.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="menu-item">
+                            <div class="flex items-start space-x-3">
+                                <div class="menu-item-icon">
+                                    <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-white mb-1">DUALDEX</h4>
+                                    <p class="text-sm text-gray-400">Your all-in-one portal for XRPL's decentralized exchange. Trade, provide liquidity, manage your wallet, and move funds on/off-chain effortlessly.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="menu-item">
+                            <div class="flex items-start space-x-3">
+                                <div class="menu-item-icon">
+                                    <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-white mb-1">SWAP xApp</h4>
+                                    <p class="text-sm text-gray-400">Easily swap digital assets within the DualPay ecosystem. A seamless way to buy and sell tokens on XRPL—fast, secure, and user-friendly.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
+            </header>
 
-        <!-- Transaction History -->
-        <div class="glass rounded-xl p-6 shadow-lg mb-6">
-            <h2 class="text-xl font-bold mb-4">Recent Transactions</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead>
-                        <tr class="text-left text-gray-500">
-                            <th class="pb-3 font-medium">Date</th>
-                            <th class="pb-3 font-medium">Description</th>
-                            <th class="pb-3 font-medium">Amount</th>
-                            <th class="pb-3 font-medium">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-gray-600">
-                        <tr class="border-t border-gray-100">
-                            <td class="py-3">Mar 28, 2025</td>
-                            <td class="py-3">Payment Received</td>
-                            <td class="py-3 text-green-500">+$500.00</td>
-                            <td class="py-3"><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">Completed</span></td>
-                        </tr>
-                        <!-- Other transaction rows -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
+            <!-- Portfolio Overview -->
+            <section class="mb-8">
+                <div class="card p-4 rounded-lg">
+                    <h2 class="text-lg font-semibold mb-3">Portfolio</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <p class="text-gray-400 text-sm">Total Balance</p>
+                            <p class="text-2xl font-bold" id="totalBalance">$0.00</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 text-sm">24h Change</p>
+                            <p class="text-2xl font-bold text-green-500" id="balanceChange">+$0.00 (0.00%)</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <button class="btn-primary px-4 py-2 rounded-full font-semibold text-sm">Deposit</button>
+                            <button class="btn-secondary px-4 py-2 rounded-full font-semibold text-sm">Withdraw</button>
+                        </div>
+                    </div>
+                    <div class="h-32">
+                        <canvas id="portfolioChart"></canvas>
+                    </div>
+                </div>
+            </section>
 
-        <!-- Charts -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="glass rounded-xl p-6 shadow-lg">
-                <h2 class="text-xl font-bold mb-4">Balance History</h2>
-                <canvas id="balanceChart"></canvas>
-            </div>
-            <div class="glass rounded-xl p-6 shadow-lg">
-                <h2 class="text-xl font-bold mb-4">Transaction Analytics</h2>
-                <canvas id="transactionChart"></canvas>
-            </div>
+            <!-- Assets -->
+            <section class="mb-8">
+                <h2 class="text-lg font-semibold mb-3">Your Assets</h2>
+                <div class="card p-4 rounded-lg">
+                    <ul id="assetList" class="space-y-3">
+                        <!-- Asset items will be dynamically inserted here -->
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Recent Activity -->
+            <section>
+                <h2 class="text-lg font-semibold mb-3">Recent Activity</h2>
+                <div class="card p-4 rounded-lg">
+                    <ul id="transactionList" class="space-y-3">
+                        <!-- Transaction items will be dynamically inserted here -->
+                    </ul>
+                </div>
+            </section>
         </div>
     </main>
 
-    <!-- Notifications Panel -->
-    <div id="notificationsPanel" class="hidden fixed right-0 top-0 h-full w-80 glass shadow-lg transform transition-transform duration-300 translate-x-full">
-        <div class="p-4">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-bold">Notifications</h3>
-                <button onclick="toggleNotifications()" class="p-2 rounded-lg hover:bg-gray-100">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            <div id="notificationsList" class="space-y-4">
-                <!-- Notifications will be populated here -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Mobile Menu -->
-    <div id="mobileMenu" class="fixed inset-0 bg-black bg-opacity-50 hidden" onclick="toggleMobileMenu()">
-        <div class="w-64 h-full bg-blue-900 p-4" onclick="event.stopPropagation()">
-            <!-- Mobile menu content will mirror the sidebar -->
-        </div>
-    </div>
-
-    <!-- Bottom Sheet for Settings -->
-    <div id="settingsSheet" class="bottom-sheet">
-        <div class="bottom-sheet-handle"></div>
-        <div class="p-4">
-            <h3 class="text-lg font-bold mb-4">Settings</h3>
-            <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                    <span>Dark Mode</span>
-                    <button class="w-12 h-6 rounded-full bg-gray-200" onclick="toggleDarkMode()">
-                        <div class="w-6 h-6 rounded-full bg-white shadow transform transition-transform"></div>
-                    </button>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span>Notifications</span>
-                    <button class="w-12 h-6 rounded-full bg-blue-600">
-                        <div class="w-6 h-6 rounded-full bg-white shadow transform translate-x-6"></div>
-                    </button>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span>Biometric Authentication</span>
-                    <button class="w-12 h-6 rounded-full bg-blue-600">
-                        <div class="w-6 h-6 rounded-full bg-white shadow transform translate-x-6"></div>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Mobile Navigation -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-gray-800 flex justify-around p-2">
+        <a href="/dashboard.html" class="text-green-500 p-2 flex flex-col items-center text-xs"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>Dashboard</a>
+        <a href="/send.html" class="hover:text-green-500 p-2 flex flex-col items-center text-xs"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>Send</a>
+        <a href="/receive.html" class="hover:text-green-500 p-2 flex flex-col items-center text-xs"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>Receive</a>
+        <a href="/swap.html" class="hover:text-green-500 p-2 flex flex-col items-center text-xs"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>Swap</a>
+        <a href="/pos.html" class="hover:text-green-500 p-2 flex flex-col items-center text-xs"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5h.01"></path></svg>POS</a>
+    </nav>
 
     <script src="/js/dashboard.js"></script>
+    <script>
+        // Hamburger menu functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const menuDropdown = document.getElementById('menuDropdown');
+            let isMenuOpen = false;
+
+            // Toggle menu function
+            function toggleMenu() {
+                isMenuOpen = !isMenuOpen;
+                menuDropdown.classList.toggle('active', isMenuOpen);
+                
+                // Update hamburger icon (animated transition)
+                const hamburgerIcon = hamburgerBtn.querySelector('svg');
+                if (isMenuOpen) {
+                    hamburgerIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
+                } else {
+                    hamburgerIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
+                }
+            }
+
+            // Close menu when clicking outside
+            function closeMenu(event) {
+                if (!menuDropdown.contains(event.target) && !hamburgerBtn.contains(event.target)) {
+                    if (isMenuOpen) {
+                        toggleMenu();
+                    }
+                }
+            }
+
+            // Event listeners
+            hamburgerBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleMenu();
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', closeMenu);
+
+            // Close menu when pressing Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && isMenuOpen) {
+                    toggleMenu();
+                }
+            });
+
+            // Add click handlers for menu items (you can customize these)
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach((item, index) => {
+                item.addEventListener('click', function() {
+                    console.log(`Menu item ${index + 1} clicked`);
+                    // Add your navigation logic here
+                    // For example: window.location.href = '/feature-page';
+                    toggleMenu(); // Close menu after selection
+                });
+            });
+        });
+    </script>
 </body>
 </html>

@@ -8,7 +8,8 @@ const KYC = require('../models/KYC');
 class KYCService {
     constructor() {
         this.onfido = new Onfido({
-            apiToken: process.env.ONFIDO_API_TOKEN
+            apiToken: process.env.ONFIDO_API_TOKEN,
+            region: 'EU'
         });
     }
 

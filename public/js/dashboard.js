@@ -1,512 +1,244 @@
-// WebSocket connection for real-time updates
-const ws = new WebSocket(`ws://${window.location.hostname}:${window.location.port}`);
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if user is logged in
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        window.location.href = '/login.html';
+        return;
+    }
 
-// Dashboard state
-let notifications = [];
-let transactions = [];
-let balanceHistory = [];
+    // Sample user data
+    const userData = {
+        username: 'demo',
+        totalBalance: 70235.71
+    };
 
-// Mobile-specific functionality
-let touchStartY = 0;
-let pullToRefreshEnabled = true;
-let currentTab = 'dashboard';
+    // Sample crypto assets with realistic data
+    const assets = [
+        {
+            symbol: 'BTC',
+            name: 'Bitcoin',
+            balance: 0.5432,
+            value: 57730.72, // 0.5432 * 106291.96
+            change: '+2.34%',
+            changeClass: 'text-green-500',
+            icon: '₿'
+        },
+        {
+            symbol: 'ETH',
+            name: 'Ethereum',
+            balance: 3.2145,
+            value: 7832.71, // 3.2145 * 2436.40
+            change: '+1.87%',
+            changeClass: 'text-green-500',
+            icon: 'Ξ'
+        },
+        {
+            symbol: 'XRP',
+            name: 'XRP',
+            balance: 1250.75,
+            value: 2751.65, // 1250.75 * 2.20
+            change: '-0.52%',
+            changeClass: 'text-red-500',
+            icon: '◊'
+        },
+        {
+            symbol: 'SOL',
+            name: 'Solana',
+            balance: 12.8934,
+            value: 1920.63, // 12.8934 * 148.95
+            change: '+4.12%',
+            changeClass: 'text-green-500',
+            icon: '◎'
+        }
+    ];
 
-// Initialize dashboard
-document.addEventListener('DOMContentLoaded', async () => {
-    await loadUserData();
-    await loadBalances();
-    await loadTransactions();
-    initializeCharts();
-    setupWebSocket();
-    initializePullToRefresh();
-    initializeSwipeableCards();
-    initializeBottomSheet();
-    setupTabNavigation();
-});
+    // Sample recent transactions
+    const transactions = [
+        {
+            type: 'Received',
+            asset: 'BTC',
+            amount: '+0.0234',
+            value: '+$1,245.67',
+            date: '2 hours ago',
+            icon: '↓',
+            iconClass: 'text-green-500'
+        },
+        {
+            type: 'Sent',
+            asset: 'ETH',
+            amount: '-0.5000',
+            value: '-$1,220.00',
+            date: '5 hours ago',
+            icon: '↑',
+            iconClass: 'text-red-500'
+        },
+        {
+            type: 'Received',
+            asset: 'XRP',
+            amount: '+150.00',
+            value: '+$90.75',
+            date: '1 day ago',
+            icon: '↓',
+            iconClass: 'text-green-500'
+        },
+        {
+            type: 'Swap',
+            asset: 'SOL → ETH',
+            amount: '2.5 SOL',
+            value: '$420.15',
+            date: '2 days ago',
+            icon: '⟲',
+            iconClass: 'text-blue-500'
+        },
+        {
+            type: 'Sent',
+            asset: 'BTC',
+            amount: '-0.0100',
+            value: '-$423.45',
+            date: '3 days ago',
+            icon: '↑',
+            iconClass: 'text-red-500'
+        }
+    ];
 
-// Load user data
-async function loadUserData() {
-    try {
-        const response = await fetch('/api/user', {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-        const userData = await response.json();
+    // Update UI elements
+    function updateDashboard() {
+        // Update username
         document.getElementById('username').textContent = userData.username;
-    } catch (error) {
-        console.error('Error loading user data:', error);
-    }
-}
-
-// Load balances
-async function loadBalances() {
-    try {
-        const response = await fetch('/api/balances', {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-        const balances = await response.json();
+        document.getElementById('username-header').textContent = userData.username;
         
-        document.getElementById('xrpBalance').textContent = balances.xrp.toFixed(2);
-        document.getElementById('xrpChange').textContent = 
-            `${balances.xrpChange >= 0 ? '+' : ''}${balances.xrpChange.toFixed(2)}%`;
+        // Update balances
+        document.getElementById('sidebarBalance').textContent = `$${userData.totalBalance.toLocaleString()}`;
+        document.getElementById('totalBalance').textContent = `$${userData.totalBalance.toLocaleString()}`;
         
-        updateFiatBalance(balances.fiat);
-    } catch (error) {
-        console.error('Error loading balances:', error);
-    }
-}
-
-// Update fiat balance display
-function updateFiatBalance(fiatBalances) {
-    const currency = document.getElementById('fiatCurrencySelect').value;
-    const balance = fiatBalances[currency] || 0;
-    document.getElementById('fiatBalance').textContent = formatCurrency(balance, currency);
-    document.getElementById('fiatCurrency').textContent = currency;
-}
-
-// Format currency
-function formatCurrency(amount, currency) {
-    const formatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: currency
-    });
-    return formatter.format(amount);
-}
-
-// Load transactions
-async function loadTransactions() {
-    try {
-        const response = await fetch('/api/transactions', {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
+        // Update 24h change (sample calculation)
+        const changeAmount = 456.78;
+        const changePercent = ((changeAmount / userData.totalBalance) * 100).toFixed(2);
+        document.getElementById('balanceChange').textContent = `+$${changeAmount} (+${changePercent}%)`;
+        
+        // Populate assets
+        const assetList = document.getElementById('assetList');
+        assetList.innerHTML = '';
+        
+        assets.forEach(asset => {
+            const assetItem = document.createElement('li');
+            assetItem.className = 'flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors';
+            assetItem.innerHTML = `
+                <div class="flex items-center">
+                    <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-lg font-bold mr-3">
+                        ${asset.icon}
+                    </div>
+                    <div>
+                        <p class="font-semibold">${asset.name}</p>
+                        <p class="text-sm text-gray-400">${asset.balance} ${asset.symbol}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="font-semibold">$${asset.value.toLocaleString()}</p>
+                    <p class="text-sm ${asset.changeClass}">${asset.change}</p>
+                </div>
+            `;
+            assetList.appendChild(assetItem);
         });
-        transactions = await response.json();
-        updateTransactionsList();
-    } catch (error) {
-        console.error('Error loading transactions:', error);
+        
+        // Populate transactions
+        const transactionList = document.getElementById('transactionList');
+        transactionList.innerHTML = '';
+        
+        transactions.forEach(transaction => {
+            const transactionItem = document.createElement('li');
+            transactionItem.className = 'flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors';
+            transactionItem.innerHTML = `
+                <div class="flex items-center">
+                    <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-lg ${transaction.iconClass} mr-3">
+                        ${transaction.icon}
+                    </div>
+                    <div>
+                        <p class="font-semibold">${transaction.type}</p>
+                        <p class="text-sm text-gray-400">${transaction.asset}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="font-semibold">${transaction.amount}</p>
+                    <p class="text-sm text-gray-400">${transaction.value}</p>
+                    <p class="text-xs text-gray-500">${transaction.date}</p>
+                </div>
+            `;
+            transactionList.appendChild(transactionItem);
+        });
     }
-}
 
-// Update transactions list
-function updateTransactionsList() {
-    const tbody = document.getElementById('transactionsList');
-    tbody.innerHTML = '';
+    // Initialize chart
+    function initializeChart() {
+        const ctx = document.getElementById('portfolioChart');
+        if (!ctx) return;
 
-    transactions.slice(0, 10).forEach(tx => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td class="py-3">
-                <span class="px-3 py-1 rounded-full text-sm ${
-                    tx.type === 'send' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
-                }">${tx.type}</span>
-            </td>
-            <td class="py-3">${formatCurrency(tx.amount, tx.currency)}</td>
-            <td class="py-3">${tx.counterparty}</td>
-            <td class="py-3">
-                <span class="px-3 py-1 rounded-full text-sm ${getStatusStyle(tx.status)}">
-                    ${tx.status}
-                </span>
-            </td>
-            <td class="py-3">${new Date(tx.date).toLocaleDateString()}</td>
-        `;
-        tbody.appendChild(row);
-    });
-}
-
-// Get status style
-function getStatusStyle(status) {
-    switch (status.toLowerCase()) {
-        case 'completed':
-            return 'bg-green-100 text-green-600';
-        case 'pending':
-            return 'bg-yellow-100 text-yellow-600';
-        case 'failed':
-            return 'bg-red-100 text-red-600';
-        default:
-            return 'bg-gray-100 text-gray-600';
-    }
-}
-
-// Initialize charts
-function initializeCharts() {
-    // Balance history chart
-    const balanceCtx = document.getElementById('balanceChart').getContext('2d');
-    new Chart(balanceCtx, {
-        type: 'line',
-        data: {
-            labels: balanceHistory.map(b => b.date),
+        // Sample portfolio data for the chart
+        const chartData = {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
             datasets: [{
-                label: 'XRP Balance',
-                data: balanceHistory.map(b => b.xrp),
-                borderColor: '#2563eb',
+                label: 'Portfolio Value',
+                data: [18500, 19200, 21300, 20800, 23400, 24567],
+                borderColor: '#00C805',
+                backgroundColor: 'rgba(0, 200, 5, 0.1)',
+                borderWidth: 2,
+                fill: true,
                 tension: 0.4
             }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                }
-            }
-        }
-    });
+        };
 
-    // Transaction analytics chart
-    const txCtx = document.getElementById('transactionChart').getContext('2d');
-    new Chart(txCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Sent', 'Received'],
-            datasets: [{
-                data: [
-                    transactions.filter(tx => tx.type === 'send').length,
-                    transactions.filter(tx => tx.type === 'receive').length
-                ],
-                backgroundColor: ['#dc2626', '#16a34a']
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                }
-            }
-        }
-    });
-}
-
-// WebSocket setup
-function setupWebSocket() {
-    ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        
-        switch (data.type) {
-            case 'transaction':
-                handleNewTransaction(data.transaction);
-                break;
-            case 'balance':
-                handleBalanceUpdate(data.balance);
-                break;
-            case 'notification':
-                handleNotification(data.notification);
-                break;
-        }
-    };
-}
-
-// Handle new transaction
-function handleNewTransaction(transaction) {
-    transactions.unshift(transaction);
-    updateTransactionsList();
-    // Update charts
-    initializeCharts();
-}
-
-// Handle balance update
-function handleBalanceUpdate(balance) {
-    document.getElementById('xrpBalance').textContent = balance.xrp.toFixed(2);
-    updateFiatBalance(balance.fiat);
-}
-
-// Handle notification
-function handleNotification(notification) {
-    notifications.unshift(notification);
-    updateNotificationBadge();
-    updateNotificationsList();
-}
-
-// Update notification badge
-function updateNotificationBadge() {
-    const badge = document.getElementById('notificationBadge');
-    const unread = notifications.filter(n => !n.read).length;
-    
-    if (unread > 0) {
-        badge.textContent = unread;
-        badge.classList.remove('hidden');
-    } else {
-        badge.classList.add('hidden');
-    }
-}
-
-// Update notifications list
-function updateNotificationsList() {
-    const list = document.getElementById('notificationsList');
-    list.innerHTML = '';
-
-    notifications.forEach(notification => {
-        const div = document.createElement('div');
-        div.className = `p-4 rounded-lg ${notification.read ? 'bg-gray-50' : 'bg-blue-50'}`;
-        div.innerHTML = `
-            <div class="flex items-center justify-between">
-                <span class="text-sm font-medium ${notification.read ? 'text-gray-600' : 'text-blue-600'}">
-                    ${notification.message}
-                </span>
-                <span class="text-xs text-gray-500">
-                    ${new Date(notification.timestamp).toLocaleTimeString()}
-                </span>
-            </div>
-        `;
-        list.appendChild(div);
-    });
-}
-
-// Toggle notifications panel
-function toggleNotifications() {
-    const panel = document.getElementById('notificationsPanel');
-    panel.classList.toggle('translate-x-full');
-    
-    if (!panel.classList.contains('translate-x-full')) {
-        // Mark notifications as read
-        notifications.forEach(n => n.read = true);
-        updateNotificationBadge();
-        updateNotificationsList();
-    }
-}
-
-// Toggle mobile menu
-function toggleMobileMenu() {
-    const menu = document.getElementById('mobileMenu');
-    menu.classList.toggle('hidden');
-}
-
-// Pull to refresh
-function initializePullToRefresh() {
-    const content = document.querySelector('main');
-    const indicator = document.querySelector('.pull-to-refresh');
-
-    content.addEventListener('touchstart', (e) => {
-        if (!pullToRefreshEnabled) return;
-        touchStartY = e.touches[0].clientY;
-        indicator.classList.remove('hidden');
-    });
-
-    content.addEventListener('touchmove', (e) => {
-        if (!pullToRefreshEnabled) return;
-        const touchY = e.touches[0].clientY;
-        const diff = touchY - touchStartY;
-
-        if (diff > 0 && content.scrollTop <= 0) {
-            e.preventDefault();
-            indicator.classList.add('active');
-        }
-    });
-
-    content.addEventListener('touchend', async (e) => {
-        if (!pullToRefreshEnabled) return;
-        const touchY = e.changedTouches[0].clientY;
-        const diff = touchY - touchStartY;
-
-        if (diff > 60 && content.scrollTop <= 0) {
-            indicator.classList.add('active');
-            await refreshData();
-        }
-
-        indicator.classList.remove('active', 'hidden');
-    });
-}
-
-// Refresh data
-async function refreshData() {
-    try {
-        await Promise.all([
-            loadBalances(),
-            loadTransactions(),
-            loadNotifications()
-        ]);
-        
-        // Show success indicator
-        showToast('Updated successfully');
-    } catch (error) {
-        showToast('Failed to update', 'error');
-    }
-}
-
-// Swipeable cards
-function initializeSwipeableCards() {
-    const cards = document.querySelectorAll('.swipeable-card');
-    
-    cards.forEach(card => {
-        let startX = 0;
-        let currentX = 0;
-
-        card.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].clientX;
-            card.style.transition = 'none';
-        });
-
-        card.addEventListener('touchmove', (e) => {
-            currentX = e.touches[0].clientX;
-            const diff = currentX - startX;
-            
-            if (diff < 0) { // Only allow left swipe
-                card.style.transform = `translateX(${diff}px)`;
-                const actions = card.querySelector('.actions');
-                if (actions) {
-                    actions.style.transform = `translateX(${diff + 100}px)`;
+        new Chart(ctx, {
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#9CA3AF'
+                        }
+                    },
+                    y: {
+                        display: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#9CA3AF',
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                elements: {
+                    point: {
+                        radius: 4,
+                        hoverRadius: 6
+                    }
                 }
             }
         });
-
-        card.addEventListener('touchend', () => {
-            card.style.transition = 'transform 0.3s ease';
-            const diff = currentX - startX;
-            
-            if (diff < -50) { // Threshold for showing actions
-                card.style.transform = 'translateX(-100px)';
-                const actions = card.querySelector('.actions');
-                if (actions) {
-                    actions.style.transform = 'translateX(0)';
-                }
-            } else {
-                card.style.transform = 'translateX(0)';
-                const actions = card.querySelector('.actions');
-                if (actions) {
-                    actions.style.transform = 'translateX(100%)';
-                }
-            }
-        });
-    });
-}
-
-// Bottom sheet
-function initializeBottomSheet() {
-    const sheet = document.getElementById('settingsSheet');
-    const handle = sheet.querySelector('.bottom-sheet-handle');
-    let startY = 0;
-    let currentY = 0;
-
-    handle.addEventListener('touchstart', (e) => {
-        startY = e.touches[0].clientY;
-        sheet.style.transition = 'none';
-    });
-
-    handle.addEventListener('touchmove', (e) => {
-        currentY = e.touches[0].clientY;
-        const diff = currentY - startY;
-        
-        if (diff > 0) { // Only allow downward swipe
-            sheet.style.transform = `translateY(${diff}px)`;
-        }
-    });
-
-    handle.addEventListener('touchend', () => {
-        sheet.style.transition = 'transform 0.3s ease';
-        const diff = currentY - startY;
-        
-        if (diff > 100) { // Threshold for closing
-            closeBottomSheet();
-        } else {
-            sheet.style.transform = 'translateY(0)';
-        }
-    });
-}
-
-// Tab navigation
-function setupTabNavigation() {
-    const tabs = document.querySelectorAll('.mobile-nav-item');
-    
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-        });
-    });
-}
-
-function switchTab(tab) {
-    currentTab = tab;
-    
-    // Handle tab switching animation
-    const main = document.querySelector('main');
-    main.style.opacity = '0';
-    
-    setTimeout(() => {
-        switch(tab) {
-            case 'dashboard':
-                loadDashboard();
-                break;
-            case 'send':
-                window.location.href = '/send.html';
-                break;
-            case 'scan':
-                openQRScanner();
-                break;
-            case 'receive':
-                window.location.href = '/receive.html';
-                break;
-        }
-        main.style.opacity = '1';
-    }, 150);
-}
-
-// Settings
-function showSettings() {
-    const sheet = document.getElementById('settingsSheet');
-    sheet.classList.add('active');
-}
-
-function closeBottomSheet() {
-    const sheet = document.getElementById('settingsSheet');
-    sheet.style.transform = 'translateY(100%)';
-    setTimeout(() => {
-        sheet.classList.remove('active');
-        sheet.style.transform = '';
-    }, 300);
-}
-
-function toggleDarkMode() {
-    document.documentElement.classList.toggle('dark');
-    // Save preference to localStorage
-    const isDark = document.documentElement.classList.contains('dark');
-    localStorage.setItem('darkMode', isDark);
-}
-
-// Toast notifications
-function showToast(message, type = 'success') {
-    const toast = document.createElement('div');
-    toast.className = `fixed bottom-20 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg text-white text-sm ${
-        type === 'success' ? 'bg-green-500' : 'bg-red-500'
-    } transition-opacity duration-300 z-50`;
-    toast.textContent = message;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        setTimeout(() => toast.remove(), 300);
-    }, 2000);
-}
-
-// QR Scanner
-function openQRScanner() {
-    if ('mediaDevices' in navigator) {
-        window.location.href = '/scan.html';
-    } else {
-        showToast('Camera access not supported', 'error');
     }
-}
 
-// Handle mobile back button
-window.addEventListener('popstate', () => {
-    if (document.getElementById('settingsSheet').classList.contains('active')) {
-        closeBottomSheet();
-    }
+    // Logout functionality
+    document.getElementById('logoutButton').addEventListener('click', function(e) {
+        e.preventDefault();
+        localStorage.removeItem('authToken');
+        window.location.href = '/login.html';
+    });
+
+    // Initialize everything
+    updateDashboard();
+    initializeChart();
 });
-
-// Settings dialog
-function loadDashboard() {
-    // Implement dashboard functionality
-    alert('Dashboard functionality coming soon!');
-}
-
-// Logout
-function logout() {
-    localStorage.removeItem('token');
-    window.location.href = '/login.html';
-}

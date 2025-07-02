@@ -47,8 +47,9 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-            styleSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.tailwindcss.com", "https://cdn.jsdelivr.net"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdn.tailwindcss.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
             imgSrc: ["'self'", "data:", "blob:"],
             connectSrc: ["'self'", "wss:", "https:"],
             frameSrc: ["'self'"],
@@ -130,17 +131,6 @@ app.get('/pos', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'pos.html'));
 });
 
-// Basic API endpoints
-app.post('/api/login', (req, res) => {
-    // Simplified login for testing
-    res.json({ token: 'test-token' });
-});
-
-app.post('/api/register', (req, res) => {
-    // Simplified registration for testing
-    res.json({ token: 'test-token' });
-});
-
 // Authentication Middleware
 const authenticateToken = async (req, res, next) => {
     try {
@@ -189,40 +179,81 @@ const sendNotification = async (userId, notification) => {
 app.post('/api/login', async (req, res) => {
     try {
         const { username, password, twoFactorCode } = req.body;
+        console.log('Login attempt:', { username, hasPassword: !!password, has2FA: !!twoFactorCode });
         
-        const user = await User.findOne({ username });
-        if (!user || !(await user.verifyPassword(password))) {
-            return res.status(401).json({ error: 'Invalid credentials' });
-        }
-
-        const verified = speakeasy.totp.verify({
-            secret: user.twoFactorSecret,
-            encoding: 'base32',
-            token: twoFactorCode
+        // Find user by username or email
+        const user = await User.findOne({ 
+            $or: [{ username }, { email: username }] 
         });
-
-        if (!verified) {
-            return res.status(401).json({ error: 'Invalid 2FA code' });
+        
+        console.log('User found:', !!user);
+        if (!user) {
+            return res.status(401).json({ error: 'User not found' });
+        }
+        
+        const passwordValid = await user.verifyPassword(password);
+        console.log('Password valid:', passwordValid);
+        
+        if (!passwordValid) {
+            return res.status(401).json({ error: 'Invalid password' });
         }
 
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
+        // Check if account is locked
+        if (user.failedLoginAttempts.lockUntil && user.failedLoginAttempts.lockUntil > new Date()) {
+            return res.status(423).json({ error: 'Account temporarily locked. Try again later.' });
+        }
+
+        // If the user has 2FA enabled, the code must be valid
+        if (user.twoFactor.enabled && user.twoFactor.secret) {
+            if (!twoFactorCode) {
+                return res.status(401).json({ error: '2FA code required' });
+            }
+            
+            const verified = user.verify2FA(twoFactorCode);
+            if (!verified) {
+                await user.incrementFailedLogins();
+                return res.status(401).json({ error: 'Invalid 2FA code' });
+            }
+        }
+
+        // Reset failed login attempts on successful login
+        if (user.failedLoginAttempts.count > 0) {
+            await user.resetFailedLogins();
+        }
+
+        // Update last login
+        user.lastLogin = {
+            timestamp: new Date(),
+            ip: req.ip,
+            userAgent: req.get('User-Agent')
+        };
+        await user.save();
+
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET || 'fallback-secret', { expiresIn: '24h' });
+        console.log('Login successful for user:', username);
         res.json({ token });
     } catch (error) {
+        console.error('Login error:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
 app.post('/api/register', async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { username, email, password } = req.body;
         
-        const existingUser = await User.findOne({ username });
+        // Check if user already exists
+        const existingUser = await User.findOne({ 
+            $or: [{ username }, { email }] 
+        });
         if (existingUser) {
-            return res.status(400).json({ error: 'Username already exists' });
+            return res.status(400).json({ error: 'Username or email already exists' });
         }
 
+        // Generate 2FA secret
         const secret = speakeasy.generateSecret({
-            name: `DualPay:${username}`
+            name: `DualPay:${username}`,
+            issuer: 'DualPay'
         });
 
         const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url);
@@ -232,8 +263,13 @@ app.post('/api/register', async (req, res) => {
 
         const user = new User({
             username,
-            password,
-            twoFactorSecret: secret.base32,
+            email,
+            password, // Will be hashed by the pre-save middleware
+            twoFactor: {
+                secret: secret.base32,
+                enabled: false,
+                verified: false
+            },
             xrpWallet: {
                 address: wallet.address,
                 seed: wallet.seed
@@ -252,13 +288,152 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
+app.get('/api/create-secure-user', async (req, res) => {
+    try {
+        // Create a user with a secure password that won't trigger browser warnings
+        const secureUser = new User({
+            username: 'demouser',
+            email: 'demo@dualpay.com',
+            password: 'DualPay2024!SecurePass', // Strong, unique password
+            twoFactor: {
+                secret: '',
+                enabled: false,
+                verified: false
+            },
+            xrpWallet: {
+                address: 'rDemoAddress456',
+                seed: 'demo-seed-456'
+            }
+        });
+        
+        await secureUser.save();
+        res.json({ 
+            message: 'Secure demo user created',
+            username: 'demouser',
+            password: 'DualPay2024!SecurePass',
+            note: 'Use these credentials to login without browser warnings'
+        });
+    } catch (error) {
+        if (error.code === 11000) {
+            // User already exists, update password
+            await User.findOneAndUpdate(
+                { username: 'demouser' }, 
+                { password: 'DualPay2024!SecurePass' }
+            );
+            res.json({ 
+                message: 'Demo user password updated',
+                username: 'demouser',
+                password: 'DualPay2024!SecurePass',
+                note: 'Use these credentials to login without browser warnings'
+            });
+        } else {
+            res.status(500).json({ error: error.message });
+        }
+    }
+});
+
+// Test user endpoint
+app.get('/api/test-user', async (req, res) => {
+    try {
+        // Check if any users exist
+        const userCount = await User.countDocuments();
+        const users = await User.find({}).select('username email');
+        
+        // Always create a fresh test user for login testing
+        const testUser = new User({
+            username: 'testuser',
+            email: 'test@example.com',
+            password: 'password123', // Will be hashed by pre-save middleware
+            twoFactor: {
+                secret: '',
+                enabled: false,
+                verified: false
+            },
+            xrpWallet: {
+                address: 'rTestAddress123',
+                seed: 'test-seed-123'
+            }
+        });
+        
+        await testUser.save();
+        res.json({ 
+            message: 'Fresh test user created',
+            username: 'testuser',
+            password: 'password123',
+            userCount: userCount + 1,
+            note: 'Use these credentials to login'
+        });
+    } catch (error) {
+        if (error.code === 11000) {
+            // User already exists, update password
+            await User.findOneAndUpdate(
+                { username: 'testuser' }, 
+                { password: 'password123' }
+            );
+            res.json({ 
+                message: 'Test user password updated',
+                username: 'testuser',
+                password: 'password123',
+                note: 'Use these credentials to login'
+            });
+        } else {
+            res.status(500).json({ error: error.message });
+        }
+    }
+});
+
 // Get user profile
 app.get('/api/profile', authenticateToken, async (req, res) => {
     try {
         const user = await User.findById(req.user._id).select('-password -twoFactorSecret');
-        res.json(user);
+        // Combine with fiat wallet info for a complete profile
+        const fiatWallet = await FiatWallet.findOne({ userId: req.user._id });
+
+        res.json({
+            ...user.toObject(),
+            fiatBalance: fiatWallet ? fiatWallet.balance : 0,
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/balance/xrp', authenticateToken, async (req, res) => {
+    try {
+        const client = new xrpl.Client('wss://s.altnet.rippletest.net:51233');
+        await client.connect();
+        const response = await client.request({
+            command: 'account_info',
+            account: req.user.xrpWallet.address,
+            ledger_index: 'validated'
+        });
+        await client.disconnect();
+        const balance = response.result.account_data.Balance;
+        res.json({ balance: xrpl.dropsToXrp(balance) });
+    } catch (error) {
+        console.error('Error fetching XRP balance:', error);
+        res.status(500).json({ error: 'Failed to fetch XRP balance' });
+    }
+});
+
+app.get('/api/price/xrp-usd', async (req, res) => {
+    try {
+        const response = await axios.get('https://api.coingecko.com/api/v3/simple/price?ids=ripple&vscurrencies=usd');
+        res.json(response.data);
+    } catch (error) {
+        console.error('Error fetching XRP price:', error);
+        res.status(500).json({ error: 'Failed to fetch XRP price' });
+    }
+});
+
+app.get('/api/transactions', authenticateToken, async (req, res) => {
+    try {
+        const transactions = await Transaction.find({ $or: [{ from: req.user.xrpWallet.address }, { to: req.user.xrpWallet.address }] })
+            .sort({ date: -1 })
+            .limit(10);
+        res.json(transactions);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch transactions' });
     }
 });
 

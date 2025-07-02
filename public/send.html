@@ -5,86 +5,256 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DualPay - Send</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="/js/qr-scanner.js"></script>
     <style>
-        body { 
-            background: #ffffff;
-            min-height: 100vh;
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #101010;
+            color: #E0E0E0;
         }
-        .glass { 
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        .sidebar {
+            background-color: #181818;
         }
-        .hover-scale:hover { 
-            transform: scale(1.05);
-            transition: transform 0.2s ease-in-out;
+        .card {
+            background-color: #181818;
+        }
+        .btn-primary {
+            background-color: #00C805;
+            color: #101010;
+        }
+        .btn-secondary {
+            background-color: #282828;
+            color: #E0E0E0;
+        }
+        .nav-link.active {
+            background-color: #282828;
+            color: white;
+        }
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #00C805;
+        }
+        .qr-scanner {
+            background-color: #282828;
         }
     </style>
 </head>
-<body class="flex flex-col min-h-screen bg-gray-50">
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full bg-white shadow-sm z-50">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex justify-between h-16">
-                <a href="/dashboard.html" class="flex items-center">
-                    <img src="/images/Logo.jpg" alt="DualPay Logo" class="h-12 w-12">
-                    <span class="ml-3 text-xl font-bold text-black">DualPay</span>
-                </a>
-                <div class="flex items-center space-x-4">
-                    <a href="/dashboard.html" class="text-gray-600 hover:text-black px-3 py-2">Dashboard</a>
-                </div>
+<body class="flex h-screen">
+
+    <!-- Sidebar -->
+    <aside class="sidebar w-64 flex-shrink-0 hidden md:flex flex-col">
+        <div class="p-6 flex-grow">
+            <!-- User Balance Card -->
+            <div class="card p-4 rounded-lg mb-10 text-center">
+                <img src="/images/Logo.jpg" alt="User Avatar" class="h-16 w-16 rounded-full mx-auto mb-4">
+                <h3 class="font-semibold text-lg" id="username">demo</h3>
+                <p class="text-2xl font-bold" id="sidebarBalance">$70,236</p>
+                <p class="text-sm text-gray-400">Total Balance</p>
             </div>
+
+            <nav>
+                <ul>
+                    <li class="mb-2"><a href="/dashboard.html" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>Dashboard</a></li>
+                    <li class="mb-2"><a href="/send.html" class="nav-link active flex items-center p-3 rounded-lg"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>Send</a></li>
+                    <li class="mb-2"><a href="/receive.html" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>Receive</a></li>
+                    <li class="mb-2"><a href="/swap.html" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>Swap</a></li>
+                    <li class="mb-2"><a href="/pos.html" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5h.01"></path></svg>Point of Sale</a></li>
+                    <li class="mb-2"><a href="/kyc.html" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 012-2h4a2 2 0 012 2v1m-4 0h4"></path></svg>KYC</a></li>
+                </ul>
+            </nav>
         </div>
-    </nav>
+        <div class="p-6">
+            <a href="#" id="logoutButton" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>Logout</a>
+        </div>
+    </aside>
 
-    <div class="flex-1 flex items-center justify-center p-4 mt-16">
-        <div class="w-full max-w-md glass rounded-xl p-6 text-black">
-            <h1 class="text-3xl font-bold text-center mb-4">Send XRP</h1>
-            <p class="text-center mb-6 text-gray-600">Wallet Balance: <span id="balance" class="font-semibold">Loading...</span> XRP</p>
+    <!-- Main Content -->
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+        <div class="max-w-2xl mx-auto">
+            <!-- Header -->
+            <header class="mb-6">
+                <h1 class="text-2xl font-bold">Send Payment</h1>
+                <p class="text-gray-400">Send crypto to any wallet address</p>
+            </header>
 
-            <!-- QR Scanner Section -->
-            <div id="qr-scanner-container" class="hidden mb-4">
-                <div id="scanner-view" class="w-full rounded-lg overflow-hidden mb-2"></div>
-                <button onclick="toggleScanner(false)" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg mb-4">
-                    Close Scanner
-                </button>
-            </div>
-
-            <!-- Payment Form -->
-            <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex-1 mr-4">
-                        <label for="recipient" class="block text-sm font-medium text-gray-700 mb-1">Recipient Address</label>
-                        <input type="text" id="recipient" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black" placeholder="Enter XRP address">
+            <!-- Send Form Card -->
+            <div class="card p-6 rounded-lg mb-6">
+                <!-- Asset Selection -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-300 mb-3">Select Asset</label>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <button class="asset-btn active p-3 rounded-lg border border-gray-700 hover:border-green-500 transition-colors" data-asset="BTC">
+                            <div class="text-lg font-bold">₿</div>
+                            <div class="text-sm">BTC</div>
+                        </button>
+                        <button class="asset-btn p-3 rounded-lg border border-gray-700 hover:border-green-500 transition-colors" data-asset="ETH">
+                            <div class="text-lg font-bold">Ξ</div>
+                            <div class="text-sm">ETH</div>
+                        </button>
+                        <button class="asset-btn p-3 rounded-lg border border-gray-700 hover:border-green-500 transition-colors" data-asset="XRP">
+                            <div class="text-lg font-bold">◊</div>
+                            <div class="text-sm">XRP</div>
+                        </button>
+                        <button class="asset-btn p-3 rounded-lg border border-gray-700 hover:border-green-500 transition-colors" data-asset="SOL">
+                            <div class="text-lg font-bold">◎</div>
+                            <div class="text-sm">SOL</div>
+                        </button>
                     </div>
-                    <button onclick="toggleScanner(true)" class="bg-gray-100 hover:bg-gray-200 p-2 rounded-lg">
-                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v-4m6 0h-2m2 0v4m-6-4h-2m2 0v4m-6 4h-2m2 0v4m-6-4h-2m2 0v4"></path>
-                        </svg>
-                    </button>
                 </div>
 
-                <div>
-                    <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">Amount (XRP)</label>
-                    <input type="number" id="amount" min="0" step="0.000001" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black" placeholder="0.00">
+                <!-- Balance Info -->
+                <div class="mb-6 p-4 bg-gray-800 rounded-lg">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">Available Balance</span>
+                        <span class="font-semibold" id="balance">0.5432 BTC</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-1">
+                        <span class="text-gray-400">USD Value</span>
+                        <span class="text-green-500" id="balanceUSD">$57,730.72</span>
+                    </div>
                 </div>
 
-                <div>
-                    <label for="memo" class="block text-sm font-medium text-gray-700 mb-1">Memo (Optional)</label>
-                    <input type="text" id="memo" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black" placeholder="Add a note">
+                <!-- QR Scanner Section -->
+                <div id="qr-scanner-container" class="hidden mb-6">
+                    <div class="qr-scanner p-4 rounded-lg">
+                        <div id="scanner-view" class="w-full rounded-lg overflow-hidden mb-4"></div>
+                        <button onclick="toggleScanner(false)" class="btn-secondary px-4 py-2 rounded-lg font-semibold">
+                            Close Scanner
+                        </button>
+                    </div>
                 </div>
 
-                <button onclick="sendTransaction()" class="w-full bg-black hover:bg-gray-800 text-white font-bold py-3 px-4 rounded-lg transition-colors">
-                    Send Payment
-                </button>
+                <!-- Send Form -->
+                <div class="space-y-4">
+                    <div>
+                        <label for="recipient" class="block text-sm font-medium text-gray-300 mb-2">Recipient Address</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="recipient" 
+                                   class="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-sm focus:ring-0 focus:shadow-[0_0_0_2px_#00C805]" 
+                                   placeholder="Enter wallet address">
+                            <button onclick="toggleScanner(true)" class="btn-secondary px-4 py-3 rounded-lg hover:bg-gray-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v-4m6 0h-2m2 0v4m-6-4h-2m2 0v4m-6 4h-2m2 0v4m-6-4h-2m2 0v4"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="amount" class="block text-sm font-medium text-gray-300 mb-2">Amount</label>
+                        <input type="number" id="amount" min="0" step="0.000001" 
+                               class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-sm focus:ring-0 focus:shadow-[0_0_0_2px_#00C805]" 
+                               placeholder="0.00">
+                        <div class="flex justify-between text-xs text-gray-400 mt-1">
+                            <span id="amountUSD">≈ $0.00 USD</span>
+                            <button type="button" onclick="setMaxAmount()" class="text-green-500 hover:underline">Max</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="memo" class="block text-sm font-medium text-gray-300 mb-2">Memo (Optional)</label>
+                        <input type="text" id="memo" 
+                               class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-sm focus:ring-0 focus:shadow-[0_0_0_2px_#00C805]" 
+                               placeholder="Add a note">
+                    </div>
+
+                    <div class="pt-4">
+                        <button onclick="sendTransaction()" class="btn-primary w-full px-6 py-4 rounded-lg font-semibold text-lg hover:bg-green-600 transition-colors">
+                            Send Payment
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Recipients -->
+            <div class="card p-6 rounded-lg">
+                <h2 class="text-lg font-semibold mb-4">Recent Recipients</h2>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 cursor-pointer transition-colors" onclick="fillRecipient('rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH')">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-sm font-bold">JD</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold">John Doe</p>
+                                <p class="text-xs text-gray-400">rN7n7otQ...6fzRH</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-gray-400">2 days ago</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 cursor-pointer transition-colors" onclick="fillRecipient('rMBzp8CgpE441cp5PVyA9rpVV7oT8hP3ys')">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-sm font-bold">AS</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold">Alice Smith</p>
+                                <p class="text-xs text-gray-400">rMBzp8Cg...hP3ys</p>
+                            </div>
+                        </div>
+                        <span class="text-xs text-gray-400">1 week ago</span>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+    </main>
+
+    <!-- Mobile Navigation -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-gray-800 flex justify-around p-2">
+        <a href="/dashboard.html" class="hover:text-green-500 p-2 flex flex-col items-center text-xs"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>Dashboard</a>
+        <a href="/send.html" class="text-green-500 p-2 flex flex-col items-center text-xs"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>Send</a>
+        <a href="/receive.html" class="hover:text-green-500 p-2 flex flex-col items-center text-xs"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>Receive</a>
+        <a href="/swap.html" class="hover:text-green-500 p-2 flex flex-col items-center text-xs"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>Swap</a>
+        <a href="/pos.html" class="hover:text-green-500 p-2 flex flex-col items-center text-xs"><svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5h.01"></path></svg>POS</a>
+    </nav>
 
     <script>
         let qrScanner = null;
+        let selectedAsset = 'BTC';
+        
+        // Asset data (updated with current market values)
+        const assets = {
+            BTC: { balance: '0.5432', usdValue: '$57,730.72', price: 106291.96 },
+            ETH: { balance: '3.2145', usdValue: '$7,832.71', price: 2436.40 },
+            XRP: { balance: '1250.75', usdValue: '$2,751.65', price: 2.20 },
+            SOL: { balance: '12.8934', usdValue: '$1,920.63', price: 148.95 }
+        };
+
+        // Asset selection
+        document.querySelectorAll('.asset-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.asset-btn').forEach(b => b.classList.remove('active', 'border-green-500'));
+                this.classList.add('active', 'border-green-500');
+                selectedAsset = this.getAttribute('data-asset');
+                updateBalance();
+            });
+        });
+
+        // Amount input USD conversion
+        document.getElementById('amount').addEventListener('input', function() {
+            const amount = parseFloat(this.value) || 0;
+            const price = assets[selectedAsset].price;
+            const usdValue = (amount * price).toLocaleString();
+            document.getElementById('amountUSD').textContent = `≈ $${usdValue} USD`;
+        });
+
+        function updateBalance() {
+            const asset = assets[selectedAsset];
+            document.getElementById('balance').textContent = `${asset.balance} ${selectedAsset}`;
+            document.getElementById('balanceUSD').textContent = asset.usdValue;
+        }
+
+        function setMaxAmount() {
+            const asset = assets[selectedAsset];
+            document.getElementById('amount').value = asset.balance;
+            document.getElementById('amount').dispatchEvent(new Event('input'));
+        }
+
+        function fillRecipient(address) {
+            document.getElementById('recipient').value = address;
+        }
 
         function toggleScanner(show) {
             const scannerContainer = document.getElementById('qr-scanner-container');
@@ -115,16 +285,6 @@
             }
         }
 
-        async function updateBalance() {
-            try {
-                const response = await fetch('/api/balance');
-                const data = await response.json();
-                document.getElementById('balance').textContent = data.balance;
-            } catch (error) {
-                console.error('Error fetching balance:', error);
-            }
-        }
-
         async function sendTransaction() {
             const recipient = document.getElementById('recipient').value;
             const amount = document.getElementById('amount').value;
@@ -135,32 +295,25 @@
                 return;
             }
 
-            try {
-                const response = await fetch('/api/send', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify({ recipient, amount, memo })
-                });
-
-                const data = await response.json();
-                if (response.ok) {
-                    alert('Transaction successful!');
-                    updateBalance();
-                } else {
-                    alert(data.error || 'Transaction failed');
-                }
-            } catch (error) {
-                console.error('Error sending transaction:', error);
-                alert('Transaction failed');
-            }
+            // Simulate transaction
+            alert(`Sending ${amount} ${selectedAsset} to ${recipient.substring(0, 8)}...`);
+            
+            // Reset form
+            document.getElementById('recipient').value = '';
+            document.getElementById('amount').value = '';
+            document.getElementById('memo').value = '';
+            document.getElementById('amountUSD').textContent = '≈ $0.00 USD';
         }
+
+        // Logout functionality
+        document.getElementById('logoutButton').addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('authToken');
+            window.location.href = '/login.html';
+        });
 
         // Initialize
         updateBalance();
-        setInterval(updateBalance, 30000);
     </script>
 </body>
 </html>

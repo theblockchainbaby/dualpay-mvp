@@ -1,87 +1,461 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DualPay - Receive XRP</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <style>
-    body { 
-      background: #ffffff;
-      min-height: 100vh;
-    }
-    .glass { 
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(0, 0, 0, 0.1);
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    }
-    .hover-scale:hover { 
-      transform: scale(1.05);
-      transition: transform 0.2s;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DualPay - Receive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #101010;
+            color: #E0E0E0;
+        }
+        .sidebar {
+            background-color: #181818;
+        }
+        .card {
+            background-color: #181818;
+        }
+        .btn-primary {
+            background-color: #00C805;
+            color: #101010;
+        }
+        .btn-secondary {
+            background-color: #282828;
+            color: #E0E0E0;
+        }
+        .nav-link.active {
+            background-color: #282828;
+            color: white;
+        }
+        .asset-btn.active {
+            background-color: #00C805;
+            color: #101010;
+            border-color: #00C805;
+        }
+        .qr-container {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .amount-input {
+            background-color: #282828;
+            border: 1px solid #404040;
+            color: #E0E0E0;
+        }
+        .amount-input:focus {
+            border-color: #00C805;
+            outline: none;
+        }
+    </style>
 </head>
-<body class="flex flex-col min-h-screen bg-gray-50">
-  <!-- Navigation -->
-  <nav class="fixed top-0 w-full bg-white shadow-sm z-50">
-    <div class="max-w-7xl mx-auto px-4">
-      <div class="flex justify-between h-16">
-        <a href="/dashboard.html" class="flex items-center">
-          <img src="/images/Logo.jpg" alt="DualPay Logo" class="h-12 w-12">
-          <span class="ml-3 text-xl font-bold text-black">DualPay</span>
-        </a>
-        <div class="flex items-center space-x-4">
-          <a href="/dashboard.html" class="text-gray-600 hover:text-black px-3 py-2">Dashboard</a>
+<body class="flex h-screen">
+
+    <!-- Sidebar -->
+    <aside class="sidebar w-64 flex-shrink-0 hidden md:flex flex-col">
+        <div class="p-6 flex-grow">
+            <!-- User Balance Card -->
+            <div class="card p-4 rounded-lg mb-10 text-center">
+                <img src="/images/Logo.jpg" alt="User Avatar" class="h-16 w-16 rounded-full mx-auto mb-4">
+                <h3 class="font-semibold text-lg" id="username">demo</h3>
+                <p class="text-2xl font-bold" id="sidebarBalance">$70,236</p>
+                <p class="text-sm text-gray-400">Total Balance</p>
+            </div>
+
+            <nav>
+                <ul>
+                    <li class="mb-2"><a href="/dashboard.html" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>Dashboard</a></li>
+                    <li class="mb-2"><a href="/send.html" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>Send</a></li>
+                    <li class="mb-2"><a href="/receive.html" class="nav-link active flex items-center p-3 rounded-lg"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>Receive</a></li>
+                    <li class="mb-2"><a href="/swap.html" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>Swap</a></li>
+                    <li class="mb-2"><a href="/pos.html" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5h.01"></path></svg>Point of Sale</a></li>
+                    <li class="mb-2"><a href="/kyc.html" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 012-2h4a2 2 0 012 2v1m-4 0h4"></path></svg>KYC</a></li>
+                </ul>
+            </nav>
         </div>
-      </div>
+        <div class="p-6">
+            <a href="#" id="logoutButton" class="nav-link flex items-center p-3 rounded-lg hover:bg-gray-700"><svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>Logout</a>
+        </div>
+    </aside>
+
+    <!-- Mobile Navigation -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-gray-800 p-4 z-10">
+        <nav class="flex justify-around">
+            <a href="/dashboard.html" class="flex flex-col items-center text-gray-400">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                <span class="text-xs">Dashboard</span>
+            </a>
+            <a href="/send.html" class="flex flex-col items-center text-gray-400">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+                <span class="text-xs">Send</span>
+            </a>
+            <a href="/receive.html" class="flex flex-col items-center text-green-500">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                <span class="text-xs">Receive</span>
+            </a>
+            <a href="/swap.html" class="flex flex-col items-center text-gray-400">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                <span class="text-xs">Swap</span>
+            </a>
+            <a href="/pos.html" class="flex flex-col items-center text-gray-400">
+                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5h.01"></path></svg>
+                <span class="text-xs">POS</span>
+            </a>
+        </nav>
     </div>
-  </nav>
 
-  <div class="flex-1 flex items-center justify-center p-4 mt-16">
-    <div class="w-full max-w-md glass rounded-xl p-6 text-black">
-      <h1 class="text-3xl font-bold text-center mb-4">Receive XRP</h1>
-      <div class="space-y-6">
-        <div>
-          <p class="text-center text-gray-600 mb-2">Your Wallet Address</p>
-          <p id="address" class="text-center font-mono break-all bg-gray-100 p-4 rounded-lg border border-gray-200">raVYEbj4zSwpJSz8XyrkfPENj7DEvhsw34</p>
+    <!-- Main Content -->
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto pb-20 md:pb-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <header class="mb-6">
+                <h1 class="text-2xl font-bold">Receive Payment</h1>
+                <p class="text-gray-400">Share your wallet address to receive cryptocurrency</p>
+            </header>
+
+            <!-- Asset Selection -->
+            <div class="card p-6 rounded-lg mb-6">
+                <label class="block text-sm font-medium text-gray-300 mb-3">Select Asset to Receive</label>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <button class="asset-btn active p-3 rounded-lg border border-gray-700 hover:border-green-500 transition-colors" data-asset="BTC">
+                        <div class="text-lg font-bold">₿</div>
+                        <div class="text-sm">Bitcoin</div>
+                    </button>
+                    <button class="asset-btn p-3 rounded-lg border border-gray-700 hover:border-green-500 transition-colors" data-asset="ETH">
+                        <div class="text-lg font-bold">Ξ</div>
+                        <div class="text-sm">Ethereum</div>
+                    </button>
+                    <button class="asset-btn p-3 rounded-lg border border-gray-700 hover:border-green-500 transition-colors" data-asset="XRP">
+                        <div class="text-lg font-bold">◊</div>
+                        <div class="text-sm">XRP</div>
+                    </button>
+                    <button class="asset-btn p-3 rounded-lg border border-gray-700 hover:border-green-500 transition-colors" data-asset="SOL">
+                        <div class="text-lg font-bold">◎</div>
+                        <div class="text-sm">Solana</div>
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Payment Request -->
+                <div class="card p-6 rounded-lg">
+                    <h3 class="font-semibold text-lg mb-4">Payment Request</h3>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Amount (Optional)</label>
+                        <div class="relative">
+                            <input type="number" id="amountInput" class="amount-input w-full p-3 rounded-lg" placeholder="0.00" step="0.00000001">
+                            <span class="absolute right-3 top-3 text-gray-400" id="selectedAsset">BTC</span>
+                        </div>
+                        <p class="text-sm text-gray-400 mt-1">≈ $<span id="usdValue">0.00</span> USD</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Description (Optional)</label>
+                        <input type="text" id="descriptionInput" class="amount-input w-full p-3 rounded-lg" placeholder="Payment for...">
+                    </div>
+
+                    <button id="generateQrBtn" class="btn-primary w-full py-3 rounded-lg font-semibold mb-4">
+                        Generate Payment Request
+                    </button>
+
+                    <!-- QR Code Container -->
+                    <div class="qr-container mb-4" id="qrContainer">
+                        <div id="qrcode"></div>
+                    </div>
+
+                    <!-- Wallet Address -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Your <span id="assetName">Bitcoin</span> Address</label>
+                        <div class="flex">
+                            <input type="text" id="walletAddress" class="amount-input flex-1 p-3 rounded-l-lg" readonly value="bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh">
+                            <button id="copyAddressBtn" class="btn-secondary px-4 rounded-r-lg hover:bg-gray-600 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button id="shareBtn" class="btn-secondary flex-1 py-3 rounded-lg font-semibold">
+                            <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
+                            </svg>
+                            Share
+                        </button>
+                        <button id="saveQrBtn" class="btn-secondary flex-1 py-3 rounded-lg font-semibold">
+                            <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Save QR
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Received Payments -->
+                <div class="card p-6 rounded-lg">
+                    <h3 class="font-semibold text-lg mb-4">Recent Received Payments</h3>
+                    <div class="space-y-3" id="recentPayments">
+                        <div class="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="bg-green-500 p-2 rounded-full mr-3">
+                                    <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-medium">0.0125 BTC</p>
+                                    <p class="text-sm text-gray-400">From: bc1qh4...7x9k</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-medium text-green-500">+$542.30</p>
+                                <p class="text-sm text-gray-400">2 hours ago</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="bg-green-500 p-2 rounded-full mr-3">
+                                    <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-medium">1.5 ETH</p>
+                                    <p class="text-sm text-gray-400">From: 0x8ba1...f62c</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-medium text-green-500">+$3,645.00</p>
+                                <p class="text-sm text-gray-400">1 day ago</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="bg-green-500 p-2 rounded-full mr-3">
+                                    <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-medium">1,250 XRP</p>
+                                    <p class="text-sm text-gray-400">From: rN7n...wEk3</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-medium text-green-500">+$756.25</p>
+                                <p class="text-sm text-gray-400">3 days ago</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="bg-green-500 p-2 rounded-full mr-3">
+                                    <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-medium">25.4 SOL</p>
+                                    <p class="text-sm text-gray-400">From: 7xKG...9mP2</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-medium text-green-500">+$2,032.00</p>
+                                <p class="text-sm text-gray-400">1 week ago</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <div id="qrcode" class="flex justify-center bg-white p-4 rounded-lg"></div>
-        
-        <div class="space-y-3">
-          <button onclick="copyAddress()" class="w-full py-3 bg-black hover:bg-gray-800 text-white rounded-lg font-semibold hover-scale transition-colors">
-            Copy Address
-          </button>
-          <a href="/dashboard.html" class="block w-full py-3 bg-gray-100 hover:bg-gray-200 text-black rounded-lg font-semibold text-center hover-scale transition-colors">
-            Back to Dashboard
-          </a>
-        </div>
-      </div>
-      <p id="message" class="text-green-600 text-center mt-4 hidden">Address copied to clipboard!</p>
-    </div>
-  </div>
+    </main>
 
-  <script>
-    // Generate QR code
-    new QRCode(document.getElementById("qrcode"), {
-      text: document.getElementById("address").textContent,
-      width: 200,
-      height: 200,
-      colorDark : "#000000",
-      colorLight : "#ffffff",
-      correctLevel : QRCode.CorrectLevel.H
-    });
+    <script>
+        // Sample addresses for different assets
+        const addresses = {
+            BTC: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+            ETH: '0x742d35Cc6634C0532925a3b8D0Ac9Aa19D9C2',
+            XRP: 'rN7n24VgEItqC4ydU9PEh4F9dB6A8i3K2wEk',
+            SOL: '7xKGqQ8z9mNHvP2cY5fW3mB4nR8kA6tJ9mP2uY5'
+        };
 
-    function copyAddress() {
-      const address = document.getElementById("address").textContent;
-      navigator.clipboard.writeText(address).then(() => {
-        const message = document.getElementById("message");
-        message.classList.remove("hidden");
-        setTimeout(() => message.classList.add("hidden"), 3000);
-      });
-    }
-  </script>
+        // Sample prices (updated with current market values)
+        const prices = {
+            BTC: 106291.96,
+            ETH: 2436.40,
+            XRP: 2.20,
+            SOL: 148.95
+        };
+
+        let currentAsset = 'BTC';
+        let qr = null;
+
+        // Initialize QR code
+        function initQR() {
+            if (qr) {
+                qr.clear();
+            }
+            qr = new QRCode(document.getElementById("qrcode"), {
+                text: addresses[currentAsset],
+                width: 200,
+                height: 200,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        // Asset selection functionality
+        document.querySelectorAll('.asset-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                document.querySelectorAll('.asset-btn').forEach(b => b.classList.remove('active'));
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Update current asset
+                currentAsset = this.dataset.asset;
+                
+                // Update UI
+                document.getElementById('selectedAsset').textContent = currentAsset;
+                document.getElementById('assetName').textContent = this.textContent.trim().split('\n')[1];
+                document.getElementById('walletAddress').value = addresses[currentAsset];
+                
+                // Update QR code
+                generateQR();
+                
+                // Update USD value
+                updateUSDValue();
+            });
+        });
+
+        // Amount input functionality
+        document.getElementById('amountInput').addEventListener('input', updateUSDValue);
+
+        function updateUSDValue() {
+            const amount = parseFloat(document.getElementById('amountInput').value) || 0;
+            const usdValue = (amount * prices[currentAsset]).toFixed(2);
+            document.getElementById('usdValue').textContent = usdValue;
+        }
+
+        // Generate QR code
+        function generateQR() {
+            const amount = document.getElementById('amountInput').value;
+            const description = document.getElementById('descriptionInput').value;
+            const address = addresses[currentAsset];
+            
+            let qrText = address;
+            
+            // For Bitcoin, use BIP21 format if amount is specified
+            if (currentAsset === 'BTC' && amount) {
+                qrText = `bitcoin:${address}?amount=${amount}`;
+                if (description) {
+                    qrText += `&label=${encodeURIComponent(description)}`;
+                }
+            }
+            // For Ethereum, use EIP-681 format
+            else if (currentAsset === 'ETH' && amount) {
+                qrText = `ethereum:${address}?value=${parseFloat(amount) * 1e18}`;
+            }
+            
+            if (qr) {
+                qr.clear();
+                qr.makeCode(qrText);
+            }
+        }
+
+        // Copy address functionality
+        document.getElementById('copyAddressBtn').addEventListener('click', async function() {
+            const address = document.getElementById('walletAddress').value;
+            try {
+                await navigator.clipboard.writeText(address);
+                this.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+                setTimeout(() => {
+                    this.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>';
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy address:', err);
+            }
+        });
+
+        // Generate QR button
+        document.getElementById('generateQrBtn').addEventListener('click', generateQR);
+
+        // Share functionality
+        document.getElementById('shareBtn').addEventListener('click', async function() {
+            const amount = document.getElementById('amountInput').value;
+            const description = document.getElementById('descriptionInput').value;
+            const address = addresses[currentAsset];
+            
+            let shareText = `Send ${currentAsset} to: ${address}`;
+            if (amount) {
+                shareText = `Send ${amount} ${currentAsset} to: ${address}`;
+            }
+            if (description) {
+                shareText += `\nFor: ${description}`;
+            }
+            
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'DualPay Payment Request',
+                        text: shareText
+                    });
+                } catch (err) {
+                    console.log('Error sharing:', err);
+                }
+            } else {
+                // Fallback: copy to clipboard
+                await navigator.clipboard.writeText(shareText);
+                alert('Payment request copied to clipboard!');
+            }
+        });
+
+        // Save QR functionality
+        document.getElementById('saveQrBtn').addEventListener('click', function() {
+            const canvas = document.querySelector('#qrcode canvas');
+            if (canvas) {
+                const link = document.createElement('a');
+                link.download = `dualpay-${currentAsset}-qr.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            }
+        });
+
+        // Logout functionality
+        document.getElementById('logoutButton').addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('authToken');
+            window.location.href = '/login.html';
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // Initialize QR code
+            initQR();
+            
+            // Load user data
+            const username = localStorage.getItem('username') || 'demo';
+            document.getElementById('username').textContent = username;
+        });
+    </script>
 </body>
 </html>

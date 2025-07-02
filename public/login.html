@@ -2,188 +2,100 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DualPay - Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DualPay - Welcome</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #fff;
-            min-height: 100vh;
-            overscroll-behavior-y: none;
+            background-color: #1C2526; /* Robinhood-like dark teal/gray */
         }
-        .hero-pattern {
-            background-image: radial-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px);
-            background-size: 20px 20px;
+        /* Custom input focus style */
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #00C805; /* Robinhood green glow */
         }
-        .card-shadow {
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.1);
+        /* Smooth button hover transition */
+        button {
+            transition: all 0.2s ease-in-out;
+        }
+        /* Hero gradient background */
+        .hero-bg {
+            background: linear-gradient(135deg, #00C805 0%, #1C2526 100%);
         }
     </style>
 </head>
-<body class="text-black">
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full bg-white/50 backdrop-blur-lg border-b border-black/10 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <a href="/" class="flex items-center">
-                    <img src="/images/Logo.jpg" alt="DualPay Logo" class="h-8 w-8">
-                    <span class="ml-2 text-xl font-bold">DualPay</span>
+<body class="text-white">
+    <div class="flex min-h-screen">
+        <!-- Left side: Login Form -->
+        <div class="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12">
+            <div class="w-full max-w-sm"> <!-- Slightly smaller max-width for a tighter layout -->
+                <a href="/" class="flex items-center mb-6">
+                    <img src="/images/Logo.jpg" alt="DualPay Logo" class="h-6 w-6 rounded-full"> <!-- Smaller, rounded logo -->
+                    <span class="ml-2 text-lg font-semibold">DualPay</span>
                 </a>
-                <div class="flex items-center space-x-4">
-                    <a href="/" class="text-gray-600 hover:text-black px-3 py-2">Home</a>
-                    <a href="/register.html" class="text-gray-600 hover:text-black px-3 py-2">Register</a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <main class="min-h-screen flex">
-        <!-- Left Section - Login Form -->
-        <div class="w-full lg:w-1/2 min-h-screen flex items-center justify-center p-8">
-            <div class="w-full max-w-md space-y-8 pt-16">
-                <div class="text-center">
-                    <h2 class="text-3xl font-bold">Welcome back</h2>
-                    <p class="mt-2 text-gray-600">Please sign in to your account</p>
-                </div>
                 
-                <form id="loginForm" class="mt-8 space-y-6">
-                    <div class="space-y-4">
-                        <div>
-                            <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
-                            <input id="username" name="username" type="text" required 
-                                class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-black focus:border-black">
-                        </div>
-                        
-                        <div>
-                            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-                            <input id="password" name="password" type="password" required 
-                                class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-black focus:border-black">
-                        </div>
-                        
-                        <div>
-                            <label for="twoFactorCode" class="block text-sm font-medium text-gray-700">2FA Code</label>
-                            <input id="twoFactorCode" name="twoFactorCode" type="text" required 
-                                class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-black focus:border-black">
-                        </div>
+                <h1 class="text-3xl font-bold mb-3">Welcome Back</h1> <!-- Simplified heading -->
+                <p class="text-gray-300 text-sm mb-6">Log in to manage your fiat and crypto payments.</p>
+
+                <form id="loginForm" class="space-y-4">
+                    <div>
+                        <label for="username" class="block text-xs font-medium text-gray-300">Email or Username</label> <!-- Adjusted label -->
+                        <input id="username" name="username" type="text" required 
+                               class="mt-1 block w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-full text-sm focus:ring-0 focus:shadow-[0_0_0_2px_#00C805]">
+                    </div>
+                    
+                    <div>
+                        <label for="password" class="block text-xs font-medium text-gray-300">Password</label>
+                        <input id="password" name="password" type="password" required 
+                               class="mt-1 block w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-full text-sm focus:ring-0 focus:shadow-[0_0_0_2px_#00C805]">
                     </div>
 
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <input id="remember" name="remember" type="checkbox" 
-                                class="h-4 w-4 border-gray-300 rounded text-black focus:ring-black">
-                            <label for="remember" class="ml-2 block text-sm text-gray-700">Remember me</label>
-                        </div>
-                        <a href="#" class="text-sm text-gray-600 hover:text-black">Forgot password?</a>
+                    <div>
+                        <label for="twoFactorCode" class="block text-xs font-medium text-gray-300">2FA Code (Optional)</label>
+                        <input id="twoFactorCode" name="twoFactorCode" type="text"
+                               class="mt-1 block w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-full text-sm focus:ring-0 focus:shadow-[0_0_0_2px_#00C805]">
                     </div>
 
-                    <div class="space-y-4">
+                    <div class="flex items-center justify-end">
+                        <a href="#" class="text-xs text-green-500 hover:underline">Forgot Password?</a>
+                    </div>
+
+                    <div>
                         <button type="submit" 
-                            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">
-                            Sign in
-                        </button>
-                        
-                        <button type="button" id="biometricButton" onclick="handleBiometricLogin(document.getElementById('username').value)"
-                            class="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-black bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">
-                            Sign in with Biometrics
+                                class="w-full flex justify-center py-3 px-4 border border-transparent rounded-full text-black bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-0 focus:shadow-[0_0_0_2px_#00C805] font-semibold text-sm">
+                            Log In
                         </button>
                     </div>
                 </form>
+                
+                <div class="mt-4 text-center">
+                    <button type="button" id="biometricButton" onclick="handleBiometricLogin(document.getElementById('username').value)"
+                            class="w-full flex justify-center py-3 px-4 border border-gray-700 rounded-full text-white bg-gray-800 hover:bg-gray-700 focus:outline-none focus:ring-0 focus:shadow-[0_0_0_2px_#00C805] font-semibold text-sm">
+                        Log In with Biometrics
+                    </button>
+                </div>
 
-                <p class="text-center text-sm text-gray-600">
-                    Don't have an account? 
-                    <a href="/register.html" class="font-medium text-black hover:text-gray-800">Create one now</a>
+                <p class="mt-6 text-center text-xs text-gray-300">
+                    New to DualPay? 
+                    <a href="/register.html" class="font-medium text-green-500 hover:underline">Create an Account</a>
                 </p>
             </div>
         </div>
 
-        <!-- Right Section - Features -->
-        <div class="hidden lg:flex w-1/2 min-h-screen bg-gradient-to-br from-gray-100 to-white hero-pattern items-center justify-center p-8">
-            <div class="grid gap-6 max-w-lg w-full">
-                <div class="bg-white/80 backdrop-blur-lg rounded-xl p-6 card-shadow border border-black/10">
-                    <h3 class="text-xl font-semibold mb-2">Enhanced Security</h3>
-                    <p class="text-gray-600">Two-factor authentication and biometric login options to keep your account secure.</p>
-                </div>
-                
-                <div class="bg-white/80 backdrop-blur-lg rounded-xl p-6 card-shadow border border-black/10">
-                    <h3 class="text-xl font-semibold mb-2">Fast Access</h3>
-                    <p class="text-gray-600">Quick and secure access to your digital wallet and payment history.</p>
-                </div>
-                
-                <div class="bg-white/80 backdrop-blur-lg rounded-xl p-6 card-shadow border border-black/10">
-                    <h3 class="text-xl font-semibold mb-2">Global Support</h3>
-                    <p class="text-gray-600">24/7 customer support to assist you with any questions or concerns.</p>
-                </div>
+        <!-- Right side: Hero Image/Graphic -->
+        <div class="hidden lg:flex w-1/2 items-center justify-center hero-bg p-12">
+            <div class="text-center">
+                <h2 class="text-4xl font-bold mb-4">Your Money, Your Way</h2>
+                <p class="text-lg text-gray-200">Seamlessly trade, pay, and invest in fiat and crypto.</p>
             </div>
         </div>
-    </main>
+    </div>
 
-    <script src="/js/biometric.js"></script>
+    <script src="/js/app.js"></script>
     <script>
-        let biometricAuth;
-
-        async function initBiometrics() {
-            try {
-                biometricAuth = new BiometricAuth();
-                const available = await biometricAuth.checkBiometricAvailability();
-                
-                if (available) {
-                    document.getElementById('biometricButton').classList.remove('hidden');
-                }
-            } catch (error) {
-                console.error('Biometric initialization error:', error);
-            }
-        }
-
-        async function handleBiometricLogin(username) {
-            try {
-                await biometricAuth.authenticate(username);
-                window.location.href = '/dashboard.html';
-            } catch (error) {
-                alert('Biometric authentication failed: ' + error.message);
-            }
-        }
-
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const twoFactorCode = document.getElementById('twoFactorCode').value;
-
-            try {
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password, twoFactorCode })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Login failed');
-                }
-
-                const { token } = await response.json();
-                localStorage.setItem('token', token);
-                window.location.href = '/dashboard.html';
-            } catch (error) {
-                alert('Login failed: ' + error.message);
-            }
-        });
-
-        document.getElementById('biometricButton').addEventListener('click', async () => {
-            const username = document.getElementById('username').value;
-            if (!username) {
-                alert('Please enter your username first');
-                return;
-            }
-            await handleBiometricLogin(username);
-        });
-
-        // Initialize biometric authentication
-        initBiometrics();
+        // Add any page-specific JS here if needed
     </script>
 </body>
 </html>
