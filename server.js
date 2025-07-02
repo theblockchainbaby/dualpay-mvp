@@ -1,5 +1,7 @@
 const express = require('express');
 const http = require('http');
+const https = require('https');
+const fs = require('fs');
 const WebSocket = require('ws');
 const path = require('path');
 const cors = require('cors');
@@ -33,9 +35,18 @@ const twoFactorRoutes = require('./routes/2fa');
 const fiatWalletRoutes = require('./routes/fiat-wallet');
 
 const app = express();
+
+// SSL options
+const sslOptions = {
+    key: fs.readFileSync(path.join(__dirname, 'ssl', 'key.pem')),
+    cert: fs.readFileSync(path.join(__dirname, 'ssl', 'cert.pem'))
+};
+
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ server });
+const httpsServer = https.createServer(sslOptions, app);
+const wss = new WebSocket.Server({ server: httpsServer });
 const port = process.env.PORT || 3000;
+const httpsPort = process.env.HTTPS_PORT || 3443;
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
@@ -631,7 +642,86 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Start server
-server.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+// Create test users for development
+async function createTestUsers() {
+    try {
+        const testUsers = [
+            {
+                username: 'demo',
+                email: 'demo@dualpay.com',
+                password: 'demopass'
+            },
+            {
+                username: 'test',
+                email: 'test@dualpay.com',
+                password: 'password123'
+            },
+            {
+                username: 'testuser',
+                email: 'test@example.com',
+                password: 'password123'
+            }
+        ];
+
+        for (const userData of testUsers) {
+            try {
+                // Check if user exists
+                const existingUser = await User.findOne({
+                    $or: [{ username: userData.username }, { email: userData.email }]
+                });
+
+                if (!existingUser) {
+                    const user = new User({
+                        username: userData.username,
+                        email: userData.email,
+                        password: userData.password, // Will be hashed by pre-save middleware
+                        twoFactor: {
+                            secret: '',
+                            enabled: false,
+                            verified: false
+                        },
+                        xrpWallet: {
+                            address: `r${userData.username}Address123`,
+                            seed: `${userData.username}-seed-123`
+                        }
+                    });
+                    
+                    await user.save();
+                    console.log(`✅ Created test user: ${userData.username} (${userData.email})`);
+                } else {
+                    // Update password to ensure it's correct
+                    existingUser.password = userData.password;
+                    await existingUser.save();
+                    console.log(`🔄 Updated test user: ${userData.username} (${userData.email})`);
+                }
+            } catch (error) {
+                console.log(`⚠️ Error with user ${userData.username}:`, error.message);
+            }
+        }
+        
+        console.log('🎯 Test users ready for login!');
+        console.log('📋 Available credentials:');
+        console.log('   • demo@dualpay.com / demopass');
+        console.log('   • test@dualpay.com / password123');
+        console.log('   • testuser / password123');
+    } catch (error) {
+        console.error('Error creating test users:', error);
+    }
+}
+
+// Start servers
+server.listen(port, '0.0.0.0', () => {
+    console.log(`HTTP Server is running on port ${port}`);
+    console.log(`Local HTTP access: http://localhost:${port}`);
+    console.log(`Network HTTP access: http://0.0.0.0:${port}`);
+});
+
+httpsServer.listen(httpsPort, '0.0.0.0', async () => {
+    console.log(`HTTPS Server is running on port ${httpsPort}`);
+    console.log(`Local HTTPS access: https://localhost:${httpsPort}`);
+    console.log(`Network HTTPS access: https://192.168.0.216:${httpsPort}`);
+    console.log(`📱 For mobile access, use: https://192.168.0.216:${httpsPort}`);
+    
+    // Create test users after server starts and DB is connected
+    setTimeout(createTestUsers, 1000);
 });

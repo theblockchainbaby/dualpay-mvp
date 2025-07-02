@@ -148,6 +148,21 @@ For testing purposes, you can use these demo accounts:
 - `PORT`: Server port (default: 3000)
 - `MONGODB_URI`: MongoDB connection string
 - `XRPL_NETWORK`: XRP Ledger network (testnet/mainnet)
+- `ONFIDO_API_TOKEN`: Onfido API token for KYC verification
+- `ONFIDO_REGION`: Onfido API region (`EU`, `US`, or `CA`)
+- `JWT_SECRET`: Secret key for JWT token generation
+- `SESSION_SECRET`: Secret key for session management
+
+### KYC Configuration
+The app uses **Onfido** for Know Your Customer (KYC) verification:
+
+- **Regions Supported**: 
+  - `EU` → Uses `api.eu.onfido.com`
+  - `US` → Uses `api.us.onfido.com` 
+  - `CA` → Uses `api.ca.onfido.com`
+- **Default Region**: EU (if not specified)
+- **Document Types**: Passport, National ID, Utility Bills
+- **Verification Flow**: Document upload → Identity verification → Compliance check
 
 ### Wallet Configuration
 - **Test Address**: `raVYEbj4zSwpJSz8XyrkfPENj7DEvhsw34`

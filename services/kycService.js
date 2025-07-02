@@ -7,10 +7,24 @@ const KYC = require('../models/KYC');
 
 class KYCService {
     constructor() {
+        // Validate required environment variables
+        if (!process.env.ONFIDO_API_TOKEN) {
+            throw new Error('ONFIDO_API_TOKEN environment variable is required');
+        }
+
+        const region = process.env.ONFIDO_REGION || 'EU';
+        const validRegions = ['EU', 'US', 'CA'];
+        
+        if (!validRegions.includes(region)) {
+            console.warn(`Invalid ONFIDO_REGION: ${region}. Using EU as default.`);
+        }
+
         this.onfido = new Onfido({
             apiToken: process.env.ONFIDO_API_TOKEN,
-            region: 'EU'
+            region: validRegions.includes(region) ? region : 'EU' // Default to EU if invalid
         });
+
+        console.log(`Onfido SDK initialized with region: ${validRegions.includes(region) ? region : 'EU'}`);
     }
 
     async initializeKYC(userId) {
