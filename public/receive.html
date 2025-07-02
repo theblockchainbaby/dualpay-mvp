@@ -126,7 +126,7 @@
             <!-- Asset Selection -->
             <div class="card p-6 rounded-lg mb-6">
                 <label class="block text-sm font-medium text-gray-300 mb-3">Select Asset to Receive</label>
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-9 gap-3">
                     <button class="asset-btn active p-4 rounded-lg border border-gray-700 hover:border-green-500 transition-colors flex flex-col items-center" data-asset="BTC">
                         <div class="flex justify-center items-center mb-3">
                             <img src="/images/bitcoin-logo.svg" alt="BTC" class="crypto-icon">
@@ -156,6 +156,30 @@
                             <img src="/images/ada-logo.png" alt="ADA" class="crypto-icon">
                         </div>
                         <div class="text-sm">Cardano</div>
+                    </button>
+                    <button class="asset-btn p-4 rounded-lg border border-gray-700 hover:border-green-500 transition-colors flex flex-col items-center" data-asset="RLUSD">
+                        <div class="flex justify-center items-center mb-3">
+                            <img src="/images/ripple-xrp-seeklogo.svg" alt="RLUSD" class="crypto-icon">
+                        </div>
+                        <div class="text-sm">Ripple USD</div>
+                    </button>
+                    <button class="asset-btn p-4 rounded-lg border border-gray-700 hover:border-green-500 transition-colors flex flex-col items-center" data-asset="USDT">
+                        <div class="flex justify-center items-center mb-3">
+                            <img src="/images/tether-usd-usdt-seeklogo.svg" alt="USDT" class="crypto-icon">
+                        </div>
+                        <div class="text-sm">Tether USD</div>
+                    </button>
+                    <button class="asset-btn p-4 rounded-lg border border-gray-700 hover:border-green-500 transition-colors flex flex-col items-center" data-asset="USDC">
+                        <div class="flex justify-center items-center mb-3">
+                            <img src="/images/usd-coin-usdc-seeklogo.svg" alt="USDC" class="crypto-icon">
+                        </div>
+                        <div class="text-sm">USD Coin</div>
+                    </button>
+                    <button class="asset-btn p-4 rounded-lg border border-gray-700 hover:border-green-500 transition-colors flex flex-col items-center" data-asset="WMUSD">
+                        <div class="flex justify-center items-center mb-3">
+                            <img src="/images/walmart-spark-seeklogo.png" alt="WMUSD" class="crypto-icon">
+                        </div>
+                        <div class="text-sm">Walmart USD</div>
                     </button>
                 </div>
             </div>
@@ -305,7 +329,11 @@
             ETH: '0x742d35Cc6634C0532925a3b8D0Ac9Aa19D9C2',
             XRP: 'rN7n24VgEItqC4ydU9PEh4F9dB6A8i3K2wEk',
             SOL: '7xKGqQ8z9mNHvP2cY5fW3mB4nR8kA6tJ9mP2uY5',
-            ADA: 'addr1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh'
+            ADA: 'addr1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+            RLUSD: 'rN7n24VgEItqC4ydU9PEh4F9dB6A8i3K2wEk',
+            USDT: '0x742d35Cc6634C0532925a3b8D0Ac9Aa19D9C2',
+            USDC: '0x742d35Cc6634C0532925a3b8D0Ac9Aa19D9C2',
+            WMUSD: '0x742d35Cc6634C0532925a3b8D0Ac9Aa19D9C2'
         };
 
         // Sample prices (updated with current market values)
@@ -314,7 +342,11 @@
             ETH: 2436.40,
             XRP: 2.20,
             SOL: 148.95,
-            ADA: 0.56
+            ADA: 0.56,
+            RLUSD: 1.00,
+            USDT: 1.00,
+            USDC: 1.00,
+            WMUSD: 1.00
         };
 
         let currentAsset = 'BTC';

@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Sample user data
     const userData = {
         username: 'demo',
-        totalBalance: 71828.19
+        totalBalance: 98499.19 // Updated to include stablecoins: 71828.19 + 5420.00 + 12500.75 + 8750.25
     };
 
     // Sample crypto assets with realistic data
@@ -58,6 +58,33 @@ document.addEventListener('DOMContentLoaded', function() {
             change: '+1.23%',
             changeClass: 'text-green-500',
             icon: '/images/ada-logo.png'
+        },
+        {
+            symbol: 'RLUSD',
+            name: 'Ripple USD',
+            balance: 5420.00,
+            value: 5420.00, // 5420.00 * 1.00 (stablecoin)
+            change: '+0.00%',
+            changeClass: 'text-gray-400',
+            icon: '/images/ripple-xrp-seeklogo.svg'
+        },
+        {
+            symbol: 'USDT',
+            name: 'Tether USD',
+            balance: 12500.75,
+            value: 12500.75, // 12500.75 * 1.00 (stablecoin)
+            change: '+0.00%',
+            changeClass: 'text-gray-400',
+            icon: '/images/tether-usd-usdt-seeklogo.svg'
+        },
+        {
+            symbol: 'USDC',
+            name: 'USD Coin',
+            balance: 8750.25,
+            value: 8750.25, // 8750.25 * 1.00 (stablecoin)
+            change: '+0.00%',
+            changeClass: 'text-gray-400',
+            icon: '/images/usd-coin-usdc-seeklogo.svg'
         }
     ];
 
@@ -133,14 +160,18 @@ document.addEventListener('DOMContentLoaded', function() {
             const assetItem = document.createElement('li');
             assetItem.className = 'flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors';
             
-            // Handle both text icons and local image files
+            // Handle both text icons and local image files - all crypto icons now large and consistent
+            const iconSize = asset.icon.startsWith('/images/') ? 'w-12 h-12' : 'w-6 h-6'; // Large size for all crypto icons
             const iconHtml = asset.icon.startsWith('/images/') 
-                ? `<img src="${asset.icon}" alt="${asset.symbol}" class="w-6 h-6">`
+                ? `<img src="${asset.icon}" alt="${asset.symbol}" class="${iconSize}">`
                 : asset.icon;
+            
+            const containerSize = asset.icon.startsWith('/images/') ? 'w-16 h-16' : 'w-10 h-10'; // Large container for all crypto icons
+            const containerBg = asset.icon.startsWith('/images/') ? '' : 'bg-gray-700'; // No background for crypto icons, keep for text icons
             
             assetItem.innerHTML = `
                 <div class="flex items-center">
-                    <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-lg font-bold mr-3">
+                    <div class="${containerSize} rounded-full ${containerBg} flex items-center justify-center text-lg font-bold mr-3">
                         ${iconHtml}
                     </div>
                     <div>
@@ -188,17 +219,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const ctx = document.getElementById('portfolioChart');
         if (!ctx) return;
 
-        // Sample portfolio data for the chart
+        // Sample portfolio data for the chart (Jan to July 2025)
         const chartData = {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
             datasets: [{
                 label: 'Portfolio Value',
-                data: [18500, 19200, 21300, 20800, 23400, 24567],
+                data: [45250, 52100, 48800, 58300, 63750, 69200, 98499], // Progressive growth to current balance (includes stablecoins)
                 borderColor: '#00C805',
                 backgroundColor: 'rgba(0, 200, 5, 0.1)',
-                borderWidth: 2,
+                borderWidth: 3,
                 fill: true,
-                tension: 0.4
+                tension: 0.4,
+                pointBackgroundColor: '#00C805',
+                pointBorderColor: '#00C805',
+                pointHoverBackgroundColor: '#00C805',
+                pointHoverBorderColor: '#ffffff',
+                pointHoverBorderWidth: 2
             }]
         };
 
@@ -208,38 +244,68 @@ document.addEventListener('DOMContentLoaded', function() {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
                 plugins: {
                     legend: {
                         display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(24, 24, 24, 0.9)',
+                        titleColor: '#E0E0E0',
+                        bodyColor: '#E0E0E0',
+                        borderColor: '#00C805',
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        displayColors: false,
+                        callbacks: {
+                            title: function(context) {
+                                return context[0].label + ' 2025';
+                            },
+                            label: function(context) {
+                                return 'Portfolio Value: $' + context.parsed.y.toLocaleString();
+                            }
+                        }
                     }
                 },
                 scales: {
                     x: {
                         display: true,
                         grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
+                            color: 'rgba(255, 255, 255, 0.1)',
+                            drawBorder: false
                         },
                         ticks: {
-                            color: '#9CA3AF'
+                            color: '#9CA3AF',
+                            font: {
+                                size: 12
+                            }
                         }
                     },
                     y: {
                         display: true,
                         grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
+                            color: 'rgba(255, 255, 255, 0.1)',
+                            drawBorder: false
                         },
                         ticks: {
                             color: '#9CA3AF',
+                            font: {
+                                size: 12
+                            },
                             callback: function(value) {
-                                return '$' + value.toLocaleString();
+                                return '$' + (value / 1000).toFixed(0) + 'k';
                             }
                         }
                     }
                 },
                 elements: {
                     point: {
-                        radius: 4,
-                        hoverRadius: 6
+                        radius: 5,
+                        hoverRadius: 8,
+                        borderWidth: 2
                     }
                 }
             }
