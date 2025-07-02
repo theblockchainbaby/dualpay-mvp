@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Sample user data
     const userData = {
         username: 'demo',
-        totalBalance: 70235.71
+        totalBalance: 71828.19
     };
 
     // Sample crypto assets with realistic data
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
             value: 57730.72, // 0.5432 * 106291.96
             change: '+2.34%',
             changeClass: 'text-green-500',
-            icon: '₿'
+            icon: '/images/bitcoin-logo.svg'
         },
         {
             symbol: 'ETH',
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
             value: 7832.71, // 3.2145 * 2436.40
             change: '+1.87%',
             changeClass: 'text-green-500',
-            icon: 'Ξ'
+            icon: '/images/ethereum-logo.svg'
         },
         {
             symbol: 'XRP',
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
             value: 2751.65, // 1250.75 * 2.20
             change: '-0.52%',
             changeClass: 'text-red-500',
-            icon: '◊'
+            icon: '/images/xrp-logo.svg'
         },
         {
             symbol: 'SOL',
@@ -48,7 +48,16 @@ document.addEventListener('DOMContentLoaded', function() {
             value: 1920.63, // 12.8934 * 148.95
             change: '+4.12%',
             changeClass: 'text-green-500',
-            icon: '◎'
+            icon: '/images/solana-logo.svg'
+        },
+        {
+            symbol: 'ADA',
+            name: 'Cardano',
+            balance: 2845.50,
+            value: 1593.48, // 2845.50 * 0.56
+            change: '+1.23%',
+            changeClass: 'text-green-500',
+            icon: '/images/ada-logo.png'
         }
     ];
 
@@ -123,10 +132,16 @@ document.addEventListener('DOMContentLoaded', function() {
         assets.forEach(asset => {
             const assetItem = document.createElement('li');
             assetItem.className = 'flex items-center justify-between p-3 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors';
+            
+            // Handle both text icons and local image files
+            const iconHtml = asset.icon.startsWith('/images/') 
+                ? `<img src="${asset.icon}" alt="${asset.symbol}" class="w-6 h-6">`
+                : asset.icon;
+            
             assetItem.innerHTML = `
                 <div class="flex items-center">
                     <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-lg font-bold mr-3">
-                        ${asset.icon}
+                        ${iconHtml}
                     </div>
                     <div>
                         <p class="font-semibold">${asset.name}</p>

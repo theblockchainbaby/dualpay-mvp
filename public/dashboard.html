@@ -82,6 +82,18 @@
             justify-content: center;
             flex-shrink: 0;
         }
+        .amount-input {
+            background-color: #282828;
+            border: 1px solid #404040;
+            color: #E0E0E0;
+        }
+        .amount-input:focus {
+            border-color: #00C805;
+            outline: none;
+        }
+        #calculatorModal.show {
+            display: flex;
+        }
         @media (max-width: 768px) {
             .menu-dropdown {
                 width: 280px;
@@ -228,6 +240,20 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <div class="menu-item">
+                            <div class="flex items-start space-x-3">
+                                <div class="menu-item-icon">
+                                    <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-white mb-1 cursor-pointer hover:text-green-400 transition-colors" id="calculatorMenuBtn">Compound Interest Calculator</h4>
+                                    <p class="text-sm text-gray-400">Calculate potential returns on your crypto investments with our advanced compound interest calculator. Plan your financial future with accurate projections.</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -277,6 +303,82 @@
             </section>
         </div>
     </main>
+
+    <!-- Compound Interest Calculator Modal -->
+    <div id="calculatorModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="card p-6 rounded-lg mx-4 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold">Compound Interest Calculator</h3>
+                <button id="closeCalculatorBtn" class="p-2 hover:bg-gray-700 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="calculatorForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Initial Investment ($)</label>
+                    <input type="number" id="principal" class="amount-input w-full p-3 rounded-lg" placeholder="1000" step="0.01" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Monthly Contribution ($)</label>
+                    <input type="number" id="monthlyContribution" class="amount-input w-full p-3 rounded-lg" placeholder="100" step="0.01">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Annual Interest Rate (%)</label>
+                    <input type="number" id="annualRate" class="amount-input w-full p-3 rounded-lg" placeholder="7" step="0.01" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Investment Period (Years)</label>
+                    <input type="number" id="years" class="amount-input w-full p-3 rounded-lg" placeholder="10" step="1" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Compounding Frequency</label>
+                    <select id="compoundingFreq" class="amount-input w-full p-3 rounded-lg" required>
+                        <option value="1">Annually</option>
+                        <option value="2">Semi-annually</option>
+                        <option value="4">Quarterly</option>
+                        <option value="12" selected>Monthly</option>
+                        <option value="365">Daily</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn-primary w-full py-3 rounded-lg font-semibold">Calculate</button>
+            </form>
+            
+            <div id="calculatorResults" class="mt-6 space-y-4 hidden">
+                <div class="p-4 bg-gray-800 rounded-lg">
+                    <h4 class="font-semibold text-green-400 mb-3">Investment Results</h4>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Total Contributions:</span>
+                            <span id="totalContributions" class="font-semibold">$0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Interest Earned:</span>
+                            <span id="interestEarned" class="font-semibold text-green-400">$0</span>
+                        </div>
+                        <div class="flex justify-between border-t border-gray-600 pt-2">
+                            <span class="text-white font-semibold">Final Amount:</span>
+                            <span id="finalAmount" class="font-bold text-xl text-green-400">$0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-4 bg-gray-800 rounded-lg">
+                    <h4 class="font-semibold mb-2">Yearly Breakdown</h4>
+                    <div id="yearlyBreakdown" class="max-h-40 overflow-y-auto space-y-1">
+                        <!-- Yearly breakdown will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Mobile Navigation -->
     <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-gray-800 flex justify-around p-2">
@@ -343,6 +445,104 @@
                     // For example: window.location.href = '/feature-page';
                     toggleMenu(); // Close menu after selection
                 });
+            });
+
+            // Compound Interest Calculator functionality
+            const calculatorMenuBtn = document.getElementById('calculatorMenuBtn');
+            const calculatorModal = document.getElementById('calculatorModal');
+            const closeCalculatorBtn = document.getElementById('closeCalculatorBtn');
+            const calculatorForm = document.getElementById('calculatorForm');
+            const calculatorResults = document.getElementById('calculatorResults');
+
+            // Open calculator modal
+            calculatorMenuBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                calculatorModal.classList.add('show');
+                toggleMenu(); // Close hamburger menu
+            });
+
+            // Close calculator modal
+            closeCalculatorBtn.addEventListener('click', function() {
+                calculatorModal.classList.remove('show');
+            });
+
+            // Close modal when clicking outside
+            calculatorModal.addEventListener('click', function(e) {
+                if (e.target === calculatorModal) {
+                    calculatorModal.classList.remove('show');
+                }
+            });
+
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && calculatorModal.classList.contains('show')) {
+                    calculatorModal.classList.remove('show');
+                }
+            });
+
+            // Calculate compound interest
+            calculatorForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const principal = parseFloat(document.getElementById('principal').value);
+                const monthlyContribution = parseFloat(document.getElementById('monthlyContribution').value) || 0;
+                const annualRate = parseFloat(document.getElementById('annualRate').value) / 100;
+                const years = parseInt(document.getElementById('years').value);
+                const compoundingFreq = parseInt(document.getElementById('compoundingFreq').value);
+                
+                if (isNaN(principal) || isNaN(annualRate) || isNaN(years)) {
+                    alert('Please enter valid numbers for all required fields.');
+                    return;
+                }
+                
+                // Calculate compound interest with monthly contributions
+                let amount = principal;
+                let totalContributions = principal;
+                const yearlyData = [];
+                
+                for (let year = 1; year <= years; year++) {
+                    const monthlyRate = annualRate / 12;
+                    
+                    for (let month = 1; month <= 12; month++) {
+                        // Add monthly contribution
+                        amount += monthlyContribution;
+                        totalContributions += monthlyContribution;
+                        
+                        // Apply monthly compound interest
+                        amount = amount * (1 + monthlyRate);
+                    }
+                    
+                    yearlyData.push({
+                        year: year,
+                        amount: amount,
+                        contributions: totalContributions,
+                        interest: amount - totalContributions
+                    });
+                }
+                
+                const finalAmount = amount;
+                const interestEarned = finalAmount - totalContributions;
+                
+                // Display results
+                document.getElementById('totalContributions').textContent = `$${totalContributions.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                document.getElementById('interestEarned').textContent = `$${interestEarned.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                document.getElementById('finalAmount').textContent = `$${finalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                
+                // Display yearly breakdown
+                const yearlyBreakdown = document.getElementById('yearlyBreakdown');
+                yearlyBreakdown.innerHTML = '';
+                
+                yearlyData.forEach(data => {
+                    const yearDiv = document.createElement('div');
+                    yearDiv.className = 'flex justify-between text-sm py-1 border-b border-gray-700';
+                    yearDiv.innerHTML = `
+                        <span>Year ${data.year}:</span>
+                        <span class="font-semibold">$${data.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    `;
+                    yearlyBreakdown.appendChild(yearDiv);
+                });
+                
+                calculatorResults.classList.remove('hidden');
             });
         });
     </script>

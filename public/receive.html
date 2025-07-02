@@ -53,6 +53,10 @@
             border-color: #00C805;
             outline: none;
         }
+        .crypto-icon {
+            width: 120px;
+            height: 120px;
+        }
     </style>
 </head>
 <body class="flex h-screen">
@@ -64,7 +68,7 @@
             <div class="card p-4 rounded-lg mb-10 text-center">
                 <img src="/images/Logo.jpg" alt="User Avatar" class="h-16 w-16 rounded-full mx-auto mb-4">
                 <h3 class="font-semibold text-lg" id="username">demo</h3>
-                <p class="text-2xl font-bold" id="sidebarBalance">$70,236</p>
+                <p class="text-2xl font-bold" id="sidebarBalance">$71,828</p>
                 <p class="text-sm text-gray-400">Total Balance</p>
             </div>
 
@@ -122,22 +126,36 @@
             <!-- Asset Selection -->
             <div class="card p-6 rounded-lg mb-6">
                 <label class="block text-sm font-medium text-gray-300 mb-3">Select Asset to Receive</label>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <button class="asset-btn active p-3 rounded-lg border border-gray-700 hover:border-green-500 transition-colors" data-asset="BTC">
-                        <div class="text-lg font-bold">₿</div>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    <button class="asset-btn active p-4 rounded-lg border border-gray-700 hover:border-green-500 transition-colors flex flex-col items-center" data-asset="BTC">
+                        <div class="flex justify-center items-center mb-3">
+                            <img src="/images/bitcoin-logo.svg" alt="BTC" class="crypto-icon">
+                        </div>
                         <div class="text-sm">Bitcoin</div>
                     </button>
-                    <button class="asset-btn p-3 rounded-lg border border-gray-700 hover:border-green-500 transition-colors" data-asset="ETH">
-                        <div class="text-lg font-bold">Ξ</div>
+                    <button class="asset-btn p-4 rounded-lg border border-gray-700 hover:border-green-500 transition-colors flex flex-col items-center" data-asset="ETH">
+                        <div class="flex justify-center items-center mb-3">
+                            <img src="/images/ethereum-logo.svg" alt="ETH" class="crypto-icon">
+                        </div>
                         <div class="text-sm">Ethereum</div>
                     </button>
-                    <button class="asset-btn p-3 rounded-lg border border-gray-700 hover:border-green-500 transition-colors" data-asset="XRP">
-                        <div class="text-lg font-bold">◊</div>
+                    <button class="asset-btn p-4 rounded-lg border border-gray-700 hover:border-green-500 transition-colors flex flex-col items-center" data-asset="XRP">
+                        <div class="flex justify-center items-center mb-3">
+                            <img src="/images/xrp-logo.svg" alt="XRP" class="crypto-icon">
+                        </div>
                         <div class="text-sm">XRP</div>
                     </button>
-                    <button class="asset-btn p-3 rounded-lg border border-gray-700 hover:border-green-500 transition-colors" data-asset="SOL">
-                        <div class="text-lg font-bold">◎</div>
+                    <button class="asset-btn p-4 rounded-lg border border-gray-700 hover:border-green-500 transition-colors flex flex-col items-center" data-asset="SOL">
+                        <div class="flex justify-center items-center mb-3">
+                            <img src="/images/solana-logo.svg" alt="SOL" class="crypto-icon">
+                        </div>
                         <div class="text-sm">Solana</div>
+                    </button>
+                    <button class="asset-btn p-4 rounded-lg border border-gray-700 hover:border-green-500 transition-colors flex flex-col items-center" data-asset="ADA">
+                        <div class="flex justify-center items-center mb-3">
+                            <img src="/images/ada-logo.png" alt="ADA" class="crypto-icon">
+                        </div>
+                        <div class="text-sm">Cardano</div>
                     </button>
                 </div>
             </div>
@@ -286,7 +304,8 @@
             BTC: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
             ETH: '0x742d35Cc6634C0532925a3b8D0Ac9Aa19D9C2',
             XRP: 'rN7n24VgEItqC4ydU9PEh4F9dB6A8i3K2wEk',
-            SOL: '7xKGqQ8z9mNHvP2cY5fW3mB4nR8kA6tJ9mP2uY5'
+            SOL: '7xKGqQ8z9mNHvP2cY5fW3mB4nR8kA6tJ9mP2uY5',
+            ADA: 'addr1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh'
         };
 
         // Sample prices (updated with current market values)
@@ -294,7 +313,8 @@
             BTC: 106291.96,
             ETH: 2436.40,
             XRP: 2.20,
-            SOL: 148.95
+            SOL: 148.95,
+            ADA: 0.56
         };
 
         let currentAsset = 'BTC';

@@ -51,7 +51,7 @@
             <div class="card p-4 rounded-lg mb-10 text-center">
                 <img src="/images/Logo.jpg" alt="User Avatar" class="h-16 w-16 rounded-full mx-auto mb-4">
                 <h3 class="font-semibold text-lg" id="username">demo</h3>
-                <p class="text-2xl font-bold" id="sidebarBalance">$70,236</p>
+                <p class="text-2xl font-bold" id="sidebarBalance">$71,828</p>
                 <p class="text-sm text-gray-400">Total Balance</p>
             </div>
 
@@ -251,12 +251,19 @@
     </div>
 
     <script>
+        // Crypto logos
+        const cryptoLogos = {
+            ADA: 'https://cryptologos.cc/logos/cardano-ada-logo.png',
+            SOL: 'https://cryptologos.cc/logos/solana-sol-logo.png',
+        };
+
         // Asset data with prices and balances
         const assets = {
-            BTC: { icon: '₿', name: 'Bitcoin', balance: '0.5432', price: 106291.96 },
-            ETH: { icon: 'Ξ', name: 'Ethereum', balance: '3.2145', price: 2436.40 },
-            XRP: { icon: '◊', name: 'XRP', balance: '1250.75', price: 2.20 },
-            SOL: { icon: '◎', name: 'Solana', balance: '12.8934', price: 148.95 }
+            BTC: { icon: '/images/bitcoin-logo.svg', name: 'Bitcoin', balance: '0.5432', price: 106291.96 },
+            ETH: { icon: '/images/ethereum-logo.svg', name: 'Ethereum', balance: '3.2145', price: 2436.40 },
+            XRP: { icon: '/images/xrp-logo.svg', name: 'XRP', balance: '1250.75', price: 2.20 },
+            SOL: { icon: '/images/solana-logo.svg', name: 'Solana', balance: '12.8934', price: 148.95 },
+            ADA: { icon: '/images/ada-logo.png', name: 'Cardano', balance: '2845.50', price: 0.56 }
         };
 
         let fromCurrency = 'BTC';
@@ -300,13 +307,25 @@
         }
 
         function updateUI() {
-            // Update from currency
-            document.getElementById('fromIcon').textContent = assets[fromCurrency].icon;
+            // Update from currency icon
+            const fromIconElement = document.getElementById('fromIcon');
+            const fromIcon = assets[fromCurrency].icon;
+            if (fromIcon.startsWith('/images/')) {
+                fromIconElement.innerHTML = `<img src="${fromIcon}" alt="${fromCurrency}" class="w-5 h-5">`;
+            } else {
+                fromIconElement.textContent = fromIcon;
+            }
             document.getElementById('fromCurrency').textContent = fromCurrency;
             document.getElementById('fromBalance').textContent = `${assets[fromCurrency].balance} ${fromCurrency}`;
             
-            // Update to currency
-            document.getElementById('toIcon').textContent = assets[toCurrency].icon;
+            // Update to currency icon
+            const toIconElement = document.getElementById('toIcon');
+            const toIcon = assets[toCurrency].icon;
+            if (toIcon.startsWith('/images/')) {
+                toIconElement.innerHTML = `<img src="${toIcon}" alt="${toCurrency}" class="w-5 h-5">`;
+            } else {
+                toIconElement.textContent = toIcon;
+            }
             document.getElementById('toCurrency').textContent = toCurrency;
             document.getElementById('toBalance').textContent = `${assets[toCurrency].balance} ${toCurrency}`;
             

@@ -49,7 +49,7 @@
             <div class="card p-4 rounded-lg mb-10 text-center">
                 <img src="/images/Logo.jpg" alt="User Avatar" class="h-16 w-16 rounded-full mx-auto mb-4">
                 <h3 class="font-semibold text-lg" id="username">demo</h3>
-                <p class="text-2xl font-bold" id="sidebarBalance">$70,236</p>
+                <p class="text-2xl font-bold" id="sidebarBalance">$71,828</p>
                 <p class="text-sm text-gray-400">Total Balance</p>
             </div>
 
@@ -83,22 +83,38 @@
                 <!-- Asset Selection -->
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-300 mb-3">Select Asset</label>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
                         <button class="asset-btn active p-3 rounded-lg border border-gray-700 hover:border-green-500 transition-colors" data-asset="BTC">
-                            <div class="text-lg font-bold">₿</div>
+                            <div class="text-lg font-bold flex justify-center">
+                                <img src="/images/bitcoin-logo.svg" alt="BTC" class="w-6 h-6">
+                            </div>
                             <div class="text-sm">BTC</div>
                         </button>
                         <button class="asset-btn p-3 rounded-lg border border-gray-700 hover:border-green-500 transition-colors" data-asset="ETH">
-                            <div class="text-lg font-bold">Ξ</div>
+                            <div class="text-lg font-bold flex justify-center">
+                                <img src="/images/ethereum-logo.svg" alt="ETH" class="w-6 h-6">
+                            </div>
                             <div class="text-sm">ETH</div>
                         </button>
                         <button class="asset-btn p-3 rounded-lg border border-gray-700 hover:border-green-500 transition-colors" data-asset="XRP">
-                            <div class="text-lg font-bold">◊</div>
+                            <div class="text-lg font-bold flex justify-center">
+                                <img src="/images/xrp-logo.svg" alt="XRP" class="w-6 h-6">
+                            </div>
                             <div class="text-sm">XRP</div>
                         </button>
                         <button class="asset-btn p-3 rounded-lg border border-gray-700 hover:border-green-500 transition-colors" data-asset="SOL">
-                            <div class="text-lg font-bold">◎</div>
+                            <div class="text-lg font-bold flex justify-center">
+                                <img src="/images/solana-logo.svg" alt="SOL" class="w-6 h-6">
+                            </div>
                             <div class="text-sm">SOL</div>
+                        </button>
+                        <button class="asset-btn p-3 rounded-lg border border-gray-700 hover:border-green-500 transition-colors" data-asset="ADA">
+                            <div class="text-lg font-bold flex justify-center">
+                                <img src="/images/ada-logo.png" alt="ADA" class="w-6 h-6">
+                            </div>
+                            <div class="text-sm">ADA</div>
+                        </button>
+                    </div>
                         </button>
                     </div>
                 </div>
@@ -219,7 +235,8 @@
             BTC: { balance: '0.5432', usdValue: '$57,730.72', price: 106291.96 },
             ETH: { balance: '3.2145', usdValue: '$7,832.71', price: 2436.40 },
             XRP: { balance: '1250.75', usdValue: '$2,751.65', price: 2.20 },
-            SOL: { balance: '12.8934', usdValue: '$1,920.63', price: 148.95 }
+            SOL: { balance: '12.8934', usdValue: '$1,920.63', price: 148.95 },
+            ADA: { balance: '2845.50', usdValue: '$1,593.48', price: 0.56 }
         };
 
         // Asset selection
