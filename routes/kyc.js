@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const crypto = require('crypto');
 const multer = require('multer');
 const kycService = require('../services/kycService');
 const { authenticateToken } = require('../middleware/auth');
@@ -135,8 +136,32 @@ router.post('/verify', authenticateToken, async (req, res) => {
     }
 });
 
+// Capture raw body for webhook signature verification
+const rawBodyCapture = express.json({
+    verify: (req, res, buf) => {
+        req.rawBody = buf;
+    }
+});
+
+function verifyWebhookSignature(rawBody, signature) {
+    const webhookToken = process.env.ONFIDO_WEBHOOK_TOKEN;
+    if (!webhookToken) {
+        throw new Error('ONFIDO_WEBHOOK_TOKEN is not configured');
+    }
+    const expected = crypto
+        .createHmac('sha256', webhookToken)
+        .update(rawBody)
+        .digest('hex');
+    const expectedBuf = Buffer.from(expected);
+    const signatureBuf = Buffer.from(signature);
+    if (expectedBuf.length !== signatureBuf.length) {
+        return false;
+    }
+    return crypto.timingSafeEqual(expectedBuf, signatureBuf);
+}
+
 // Webhook endpoint for Onfido notifications
-router.post('/webhook', express.json(), async (req, res) => {
+router.post('/webhook', rawBodyCapture, async (req, res) => {
     try {
         // Verify webhook signature
         const signature = req.headers['x-sha2-signature'];
@@ -144,11 +169,10 @@ router.post('/webhook', express.json(), async (req, res) => {
             return res.status(401).json({ error: 'Missing webhook signature' });
         }
 
-        // TODO: Implement signature verification
-        // const isValid = verifyWebhookSignature(req.body, signature);
-        // if (!isValid) {
-        //     return res.status(401).json({ error: 'Invalid webhook signature' });
-        // }
+        const isValid = verifyWebhookSignature(req.rawBody, signature);
+        if (!isValid) {
+            return res.status(401).json({ error: 'Invalid webhook signature' });
+        }
 
         await kycService.handleWebhook(req.body);
         res.json({ message: 'Webhook processed successfully' });
